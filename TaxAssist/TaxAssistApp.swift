@@ -11,7 +11,7 @@ import SwiftUI
 struct TaxAssistApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            LoadingScreenOne()
         }
     }
 }
