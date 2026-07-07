@@ -90,6 +90,28 @@ struct PrivacyPolicyScreen: View {
                             .lineSpacing(4)
                     }
                     
+                    Divider()
+                        .padding(.vertical, 8)
+                    
+                    // MARK: - Link to Terms of Service
+                    NavigationLink(destination: TermsOfServiceScreen()) {
+                        HStack {
+                            Text("Read our Terms of Service")
+                                .foregroundColor(.blue)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.gray)
+                                .font(.system(size: 14))
+                        }
+                        .padding()
+                        .background(Color(UIColor.systemGray6))
+                        .cornerRadius(10)
+                    }
+                    
                     Spacer(minLength: 40)
                 }
                 .padding(20)
