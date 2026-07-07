@@ -1,5 +1,5 @@
 //
-//  TermsOfServiceScreen.swift
+//  PrivacyPolicyScreen.swift
 //  TaxAssist
 //
 //  Created by Dhruv Patel on 7/6/26.
@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-struct TermsOfServiceScreen: View {
-    // This allows us to easily close the screen when the user is done reading
+struct PrivacyPolicyScreen: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -23,13 +22,13 @@ struct TermsOfServiceScreen: View {
                     
                     // MARK: - Section 1
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("1. Acceptance of Terms")
+                        Text("1. Information We Collect")
                             .font(.headline)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
                         
-                        Text("By creating an account or using Tax Assist, you agree to be bound by these Terms of Service. If you do not agree, please do not use the application.")
+                        Text("To provide our services, we collect your email address for account authentication. We also collect the personal and financial information you voluntarily input into our questionnaires. This may include income, expenses, and demographic data required to complete your tax forms.")
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.darkGray))
                             .lineSpacing(4)
@@ -37,14 +36,13 @@ struct TermsOfServiceScreen: View {
                     
                     // MARK: - Section 2
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("2. No Professional Tax Advice")
+                        Text("2. How We Use Your Data")
                             .font(.headline)
                             .fontWeight(.bold)
-                            .foregroundColor(.red) // Highlighted for legal emphasis
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
                         
-                        Text("Tax Assist provides software tools to help format and generate PDF tax forms based solely on user inputs. Tax Assist is NOT a Certified Public Accountant (CPA), financial advisor, or tax attorney. We do not provide tax, legal, or financial advice. You are solely responsible for verifying the accuracy of your forms before filing them with the IRS or state tax authorities.")
+                        Text("Your data is used strictly for core app functionality: maintaining your account and generating your PDF tax forms. We do not use your financial information for marketing, nor do we use it for targeted advertising.")
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.darkGray))
                             .lineSpacing(4)
@@ -52,13 +50,13 @@ struct TermsOfServiceScreen: View {
                     
                     // MARK: - Section 3
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("3. User Responsibilities & Accuracy")
+                        Text("3. Data Sharing & Third Parties")
                             .font(.headline)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
                         
-                        Text("The accuracy of the generated tax documents relies entirely on the information you provide. Tax Assist is not liable for any audits, penalties, fines, or delayed returns resulting from incorrect or incomplete information entered into the application.")
+                        Text("We absolutely do not sell, rent, or trade your personal or financial data. We utilize trusted third-party cloud services (such as Google Firebase) solely to securely store and process your data. These providers are bound by strict confidentiality and security standards.")
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.darkGray))
                             .lineSpacing(4)
@@ -66,13 +64,13 @@ struct TermsOfServiceScreen: View {
                     
                     // MARK: - Section 4
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("4. Account Security")
+                        Text("4. Data Security")
                             .font(.headline)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
                         
-                        Text("You are responsible for maintaining the confidentiality of your login credentials. Tax Assist reserves the right to suspend or terminate accounts that engage in fraudulent activity or violate these terms.")
+                        Text("We implement industry-standard security measures, including data encryption in transit and at rest, to protect your sensitive information. However, no electronic transmission or storage system is 100% secure, and we cannot guarantee absolute security.")
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.darkGray))
                             .lineSpacing(4)
@@ -80,13 +78,13 @@ struct TermsOfServiceScreen: View {
                     
                     // MARK: - Section 5
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("5. Limitation of Liability")
+                        Text("5. Account Deletion")
                             .font(.headline)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
                         
-                        Text("To the maximum extent permitted by law, Tax Assist and its developers shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly.")
+                        Text("You have the right to request the deletion of your account and all associated tax data at any time. You can do this directly within the app settings or by contacting our support team.")
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.darkGray))
                             .lineSpacing(4)
@@ -95,10 +93,10 @@ struct TermsOfServiceScreen: View {
                     Divider()
                         .padding(.vertical, 8)
                     
-                    // MARK: - Link to Privacy Policy
-                    NavigationLink(destination: PrivacyPolicyScreen()) {
+                    // MARK: - Link to Terms of Service
+                    NavigationLink(destination: TermsOfServiceScreen()) {
                         HStack {
-                            Text("Read our Privacy Policy")
+                            Text("Read our Terms of Service")
                                 .foregroundColor(.blue)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
@@ -118,7 +116,7 @@ struct TermsOfServiceScreen: View {
                 }
                 .padding(20)
             }
-            .navigationTitle("Terms of Service")
+            .navigationTitle("Privacy Policy")
             .navigationBarTitleDisplayMode(.inline)
             // MARK: - Close Button
             .toolbar {
@@ -136,5 +134,5 @@ struct TermsOfServiceScreen: View {
 }
 
 #Preview {
-    TermsOfServiceScreen()
+    PrivacyPolicyScreen()
 }
