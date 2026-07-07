@@ -11,7 +11,7 @@ DerivedData/
 *.dSYM.zip
 *.dSYM
 
-# User settings / Workspace state (This prevents the merge conflicts!)
+# User settings / Workspace state
 xcuserdata/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
