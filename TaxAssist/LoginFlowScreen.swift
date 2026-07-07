@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AuthenticationServices
+import FirebaseAuth
 
 struct LoginFlowScreen: View {
     // Shared State
@@ -22,13 +23,15 @@ struct LoginFlowScreen: View {
     @State private var isSecure: Bool = true
     @State private var rememberMe: Bool = false
     
+    // Firebase Error State
+    @State private var errorMessage: String = ""
+    
     var body: some View {
         VStack(spacing: 0) {
             
-            // This flexible spacer acts like a spring, pushing the content down to the center
             Spacer()
             
-            // MARK: - Shared Logo Header
+            // Shared Logo Header
             HStack(spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 14)
@@ -48,7 +51,7 @@ struct LoginFlowScreen: View {
             }
             .padding(.bottom, 24)
             
-            // MARK: - View Transition Logic
+            // View Transition Logic
             if !showPasswordStep {
                 emailEntryView
                     .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .leading)))
@@ -63,7 +66,7 @@ struct LoginFlowScreen: View {
         .background(Color(UIColor.systemGray6).opacity(0.3).ignoresSafeArea())
         .animation(.easeInOut(duration: 0.3), value: showPasswordStep)
         
-        // MARK: - Legal Sheets
+        // Legal Sheets
         .sheet(isPresented: $showTermsOfService) {
             TermsOfServiceScreen()
         }
@@ -72,7 +75,7 @@ struct LoginFlowScreen: View {
         }
     }
     
-    // MARK: - STEP 1: Email Entry
+    // STEP 1: Email Entry
     private var emailEntryView: some View {
         VStack(spacing: 20) {
             VStack(spacing: 6) {
@@ -86,7 +89,6 @@ struct LoginFlowScreen: View {
             }
             .padding(.bottom, 4)
             
-            // Adjusted to a fixed height of 50
             TextField("email@domain.com", text: $email)
                 .padding(.horizontal)
                 .frame(height: 50)
@@ -124,6 +126,7 @@ struct LoginFlowScreen: View {
             
             // Social Logins
             VStack(spacing: 12) {
+                
                 Button(action: { print("Google Login tapped") }) {
                     HStack(spacing: 12) {
                         Image("GoogleLogo")
@@ -162,7 +165,6 @@ struct LoginFlowScreen: View {
                 }
             }
             
-            // Pushes the legal text to the bottom edge of its container
             Spacer()
                 .frame(minHeight: 20, maxHeight: 60)
             
@@ -195,13 +197,16 @@ struct LoginFlowScreen: View {
         .multilineTextAlignment(.center)
     }
     
-    // MARK: - STEP 2: Password Entry
+    // STEP 2: Password Entry
     private var passwordEntryView: some View {
         VStack(spacing: 20) {
             
             // Back button
             HStack {
-                Button(action: { showPasswordStep = false }) {
+                Button(action: {
+                    showPasswordStep = false
+                    errorMessage = ""
+                }) {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.black)
                         .font(.system(size: 18, weight: .semibold))
@@ -220,7 +225,7 @@ struct LoginFlowScreen: View {
             }
             .padding(.bottom, 4)
             
-            // Password Field - Fixed height of 50
+            // Password Field
             HStack(spacing: 0) {
                 Group {
                     if isSecure {
@@ -253,9 +258,42 @@ struct LoginFlowScreen: View {
             }
             .tint(.blue)
             
-            // Sign In Button
+            // Error Message Display
+            if !errorMessage.isEmpty {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .font(.footnote)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            
+            // Final Sign In Button with Firebase Logic
             Button(action: {
-                print("Signing in with Email: \(email), Password: \(password)")
+                errorMessage = ""
+                
+                Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+                    
+                    if let error = error {
+                        let errCode = (error as NSError).code
+                        if errCode == AuthErrorCode.emailAlreadyInUse.rawValue {
+                            
+                            Auth.auth().signIn(withEmail: email, password: password) { signResult, signError in
+                                if let signError = signError {
+                                    errorMessage = signError.localizedDescription
+                                } else {
+                                    print("🎉 Successfully logged in existing user: \(email)")
+                                    // Navigate to the Dashboard screen
+                                }
+                            }
+                            
+                        } else {
+                            errorMessage = error.localizedDescription
+                        }
+                    } else {
+                        print("🎉 Successfully created NEW user: \(email)")
+                        // Navigate to the Dashboard screen
+                    }
+                }
             }) {
                 Text("Sign In")
                     .font(.system(size: 16, weight: .semibold))
@@ -269,7 +307,7 @@ struct LoginFlowScreen: View {
             .disabled(password.isEmpty)
             
             Button("Forgot password?") {
-                // TODO: Handle forgot password
+                // Handle forgot password
             }
             .font(.subheadline)
             .foregroundColor(.blue)
