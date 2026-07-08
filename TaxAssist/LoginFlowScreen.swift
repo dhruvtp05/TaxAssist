@@ -1,37 +1,26 @@
-//
-//  LoginFlowScreen.swift
-//  TaxAssist
-//
-//  Created by Daigo Martinez & Dhruv Patel on 7/6/26.
-//
-
 import SwiftUI
 import AuthenticationServices
+import FirebaseCore
 import FirebaseAuth
+import GoogleSignIn
 
 struct LoginFlowScreen: View {
-    // Shared State
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showPasswordStep: Bool = false
     
-    // Legal Screens State
     @State private var showTermsOfService: Bool = false
     @State private var showPrivacyPolicy: Bool = false
     
-    // Password Step specific state
     @State private var isSecure: Bool = true
     @State private var rememberMe: Bool = false
     
-    // Firebase Error State
     @State private var errorMessage: String = ""
     
     var body: some View {
         VStack(spacing: 0) {
-            
             Spacer()
             
-            // Shared Logo Header
             HStack(spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 14)
@@ -51,7 +40,6 @@ struct LoginFlowScreen: View {
             }
             .padding(.bottom, 24)
             
-            // View Transition Logic
             if !showPasswordStep {
                 emailEntryView
                     .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .leading)))
@@ -65,8 +53,6 @@ struct LoginFlowScreen: View {
         .padding(.horizontal, 24)
         .background(Color(UIColor.systemGray6).opacity(0.3).ignoresSafeArea())
         .animation(.easeInOut(duration: 0.3), value: showPasswordStep)
-        
-        // Legal Sheets
         .sheet(isPresented: $showTermsOfService) {
             TermsOfServiceScreen()
         }
@@ -75,7 +61,6 @@ struct LoginFlowScreen: View {
         }
     }
     
-    // STEP 1: Email Entry
     private var emailEntryView: some View {
         VStack(spacing: 20) {
             VStack(spacing: 6) {
@@ -113,7 +98,6 @@ struct LoginFlowScreen: View {
             .opacity(email.isEmpty ? 0.6 : 1.0)
             .disabled(email.isEmpty)
             
-            // "or" Divider
             HStack {
                 VStack { Divider() }
                 Text("or")
@@ -124,10 +108,48 @@ struct LoginFlowScreen: View {
             }
             .padding(.vertical, 4)
             
-            // Social Logins
             VStack(spacing: 12) {
-                
-                Button(action: { print("Google Login tapped") }) {
+                Button(action: {
+                    errorMessage = ""
+                    
+                    guard let clientID = FirebaseApp.app()?.options.clientID else {
+                        errorMessage = "Firebase configuration error."
+                        return
+                    }
+                    
+                    let config = GIDConfiguration(clientID: clientID)
+                    GIDSignIn.sharedInstance.configuration = config
+                    
+                    guard let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+                          let window = windowScene.windows.first(where: { $0.isKeyWindow }),
+                          let rootViewController = window.rootViewController else {
+                        errorMessage = "Could not find active window."
+                        return
+                    }
+                    
+                    GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
+                        if let error = error {
+                            errorMessage = error.localizedDescription
+                            return
+                        }
+                        
+                        guard let user = signInResult?.user,
+                              let idToken = user.idToken?.tokenString else {
+                            errorMessage = "Could not retrieve Google token."
+                            return
+                        }
+                        
+                        let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+                        
+                        Auth.auth().signIn(with: credential) { result, error in
+                            if let error = error {
+                                errorMessage = error.localizedDescription
+                            } else {
+                                print("Successfully logged in with Google!")
+                            }
+                        }
+                    }
+                }) {
                     HStack(spacing: 12) {
                         Image("GoogleLogo")
                             .resizable()
@@ -168,7 +190,6 @@ struct LoginFlowScreen: View {
             Spacer()
                 .frame(minHeight: 20, maxHeight: 60)
             
-            // Interactive Legal Links
             VStack(spacing: 4) {
                 HStack(spacing: 0) {
                     Text("By clicking continue, you agree to our ")
@@ -193,15 +214,20 @@ struct LoginFlowScreen: View {
                 }
             }
             .font(.footnote)
+            
+            if !errorMessage.isEmpty {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .font(.footnote)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
+            }
         }
         .multilineTextAlignment(.center)
     }
     
-    // STEP 2: Password Entry
     private var passwordEntryView: some View {
         VStack(spacing: 20) {
-            
-            // Back button
             HStack {
                 Button(action: {
                     showPasswordStep = false
@@ -225,7 +251,6 @@ struct LoginFlowScreen: View {
             }
             .padding(.bottom, 4)
             
-            // Password Field
             HStack(spacing: 0) {
                 Group {
                     if isSecure {
@@ -250,7 +275,6 @@ struct LoginFlowScreen: View {
             .cornerRadius(10)
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(UIColor.systemGray4), lineWidth: 1))
             
-            // Remember Me Toggle
             Toggle(isOn: $rememberMe) {
                 Text("Remember me")
                     .font(.subheadline)
@@ -258,7 +282,6 @@ struct LoginFlowScreen: View {
             }
             .tint(.blue)
             
-            // Error Message Display
             if !errorMessage.isEmpty {
                 Text(errorMessage)
                     .foregroundColor(.red)
@@ -267,31 +290,25 @@ struct LoginFlowScreen: View {
                     .padding(.horizontal)
             }
             
-            // Final Sign In Button with Firebase Logic
             Button(action: {
                 errorMessage = ""
                 
                 Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
-                    
                     if let error = error {
                         let errCode = (error as NSError).code
                         if errCode == AuthErrorCode.emailAlreadyInUse.rawValue {
-                            
                             Auth.auth().signIn(withEmail: email, password: password) { signResult, signError in
                                 if let signError = signError {
                                     errorMessage = signError.localizedDescription
                                 } else {
-                                    print("🎉 Successfully logged in existing user: \(email)")
-                                    // Navigate to the Dashboard screen
+                                    print("Successfully logged in existing user: \(email)")
                                 }
                             }
-                            
                         } else {
                             errorMessage = error.localizedDescription
                         }
                     } else {
-                        print("🎉 Successfully created NEW user: \(email)")
-                        // Navigate to the Dashboard screen
+                        print("Successfully created NEW user: \(email)")
                     }
                 }
             }) {
@@ -307,13 +324,25 @@ struct LoginFlowScreen: View {
             .disabled(password.isEmpty)
             
             Button("Forgot password?") {
-                // Handle forgot password
-            }
-            .font(.subheadline)
-            .foregroundColor(.blue)
-            .padding(.top, 4)
-            
-            Spacer()
+                            errorMessage = ""
+                            
+                            guard !email.isEmpty else {
+                                errorMessage = "Please enter your email to reset your password."
+                                return
+                            }
+                            
+                            Auth.auth().sendPasswordReset(withEmail: email) { error in
+                                if let error = error {
+                                    errorMessage = error.localizedDescription
+                                } else {
+                                    // Using the error message text to show a success note for now!
+                                    errorMessage = "✅ Password reset email sent! Check your inbox."
+                                }
+                            }
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                        .padding(.top, 4)
         }
     }
 }

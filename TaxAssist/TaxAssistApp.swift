@@ -22,7 +22,7 @@ struct TaxAssistApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LoadingScreenOne()
+            LoginFlowScreen()
         }
     }
 }

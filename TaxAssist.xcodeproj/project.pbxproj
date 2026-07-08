@@ -9,15 +9,30 @@
 /* Begin PBXBuildFile section */
 		16DCD2A82FFD4DBF007BBEDB /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2A72FFD4DBF007BBEDB /* FirebaseCore */; };
 		16DCD2AA2FFD4DC9007BBEDB /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2A92FFD4DC9007BBEDB /* FirebaseAuth */; };
+		16DCD2ED2FFD62A8007BBEDB /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2EC2FFD62A8007BBEDB /* GoogleSignIn */; };
+		16DCD2EF2FFD62A8007BBEDB /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2EE2FFD62A8007BBEDB /* GoogleSignInSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		16EF83812FF56829005CE568 /* TaxAssist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaxAssist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		16DCD2F12FFD63A0007BBEDB /* Exceptions for "TaxAssist" folder in "TaxAssist" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 16EF83802FF56829005CE568 /* TaxAssist */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		16EF83832FF56829005CE568 /* TaxAssist */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				16DCD2F12FFD63A0007BBEDB /* Exceptions for "TaxAssist" folder in "TaxAssist" target */,
+			);
 			path = TaxAssist;
 			sourceTree = "<group>";
 		};
@@ -30,6 +45,8 @@
 			files = (
 				16DCD2A82FFD4DBF007BBEDB /* FirebaseCore in Frameworks */,
 				16DCD2AA2FFD4DC9007BBEDB /* FirebaseAuth in Frameworks */,
+				16DCD2ED2FFD62A8007BBEDB /* GoogleSignIn in Frameworks */,
+				16DCD2EF2FFD62A8007BBEDB /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +99,8 @@
 			packageProductDependencies = (
 				16DCD2A72FFD4DBF007BBEDB /* FirebaseCore */,
 				16DCD2A92FFD4DC9007BBEDB /* FirebaseAuth */,
+				16DCD2EC2FFD62A8007BBEDB /* GoogleSignIn */,
+				16DCD2EE2FFD62A8007BBEDB /* GoogleSignInSwift */,
 			);
 			productName = TaxAssist;
 			productReference = 16EF83812FF56829005CE568 /* TaxAssist.app */;
@@ -113,6 +132,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				16DCD2A52FFD47F8007BBEDB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				16DCD2EB2FFD62A8007BBEDB /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 16EF83822FF56829005CE568 /* Products */;
@@ -273,6 +293,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TaxAssist/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -304,6 +325,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TaxAssist/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -358,6 +380,14 @@
 				minimumVersion = 12.15.0;
 			};
 		};
+		16DCD2EB2FFD62A8007BBEDB /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.2.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -370,6 +400,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 16DCD2A52FFD47F8007BBEDB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
+		};
+		16DCD2EC2FFD62A8007BBEDB /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 16DCD2EB2FFD62A8007BBEDB /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		16DCD2EE2FFD62A8007BBEDB /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 16DCD2EB2FFD62A8007BBEDB /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
