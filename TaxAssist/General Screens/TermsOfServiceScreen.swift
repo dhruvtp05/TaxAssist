@@ -2,13 +2,11 @@
 //  TermsOfServiceScreen.swift
 //  TaxAssist
 //
-//  Created by Dhruv Patel on 7/6/26.
-//
+
 
 import SwiftUI
 
 struct TermsOfServiceScreen: View {
-    // This allows us to easily close the screen when the user is done reading
     @Environment(\.dismiss) var dismiss
     
     var body: some View {

@@ -2,8 +2,7 @@
 //  LoadingScreenTwo.swift
 //  TaxAssist
 //
-//  Created by Dhruv Patel on 7/6/26.
-//
+
 
 import SwiftUI
 
@@ -12,18 +11,15 @@ struct LoadingScreenTwo: View {
     
     var body: some View {
         ZStack {
-            // A semi-transparent background to blur/dim the screen behind it
             Color.white.opacity(0.9)
                 .ignoresSafeArea()
             
             // MARK: - The Infinite Spinner
             ZStack {
-                // Background Track
                 Circle()
                     .stroke(Color(UIColor.systemGray5), lineWidth: 6)
                     .frame(width: 50, height: 50)
                 
-                // Spinning Indicator
                 Circle()
                     .trim(from: 0.0, to: 0.75)
                     .stroke(Color.blue, style: StrokeStyle(lineWidth: 6, lineCap: .round))

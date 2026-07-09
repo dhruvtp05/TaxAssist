@@ -70,6 +70,9 @@ struct _099Form: View {
         @State private var answer = ""
         @State private var validationMessage = ""
         @State private var yesNoAnswer = true
+        
+        // NEW: Stores the generated URL to trigger navigation
+        @State private var generatedPDFUrl: URL?
 
         // Stores all information
         @State private var w2 = _099FormData()
@@ -171,6 +174,10 @@ struct _099Form: View {
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("1099-NEC Guide")
             .navigationBarTitleDisplayMode(.inline)
+            // NEW: Triggers the PDF Preview screen when we have a URL!
+            .navigationDestination(item: $generatedPDFUrl) { url in
+                PDFPreviewScreen(pdfURL: url)
+            }
             .sheet(isPresented: $showingHelp) {
                 _099FormHelpView(highlight: currentHighlight)
             }
@@ -178,6 +185,27 @@ struct _099Form: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(definitionMessage)
+            }
+        }
+
+        // MARK: - Logic Functions
+        
+        // NEW: PDF Generator Function
+        func create1099PDF(from data: _099FormData) throws -> URL {
+            let fileName = "TaxAssist-\(data.employeeName)-1099"
+            
+            return try UniversalPDFGenerator.generate(baseImageName: "Form1099", outputFileName: fileName) { imageRect in
+                let nameRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.43, width: 0.48, height: 0.08, inside: imageRect)
+                UniversalPDFGenerator.drawText(data.employeeName, in: nameRect, fontSize: 11)
+                
+                let ssRect = UniversalPDFGenerator.fieldRect(x: 0.25, y: 0.03, width: 0.21, height: 0.06, inside: imageRect)
+                UniversalPDFGenerator.drawText(data.socialSecurity, in: ssRect, fontSize: 10)
+                
+                let address = [data.streetAddress, "\(data.city), \(data.state) \(data.zipCode)"]
+                    .filter { !$0.isEmpty }
+                    .joined(separator: "\n")
+                let addressRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.51, width: 0.48, height: 0.22, inside: imageRect)
+                UniversalPDFGenerator.drawText(address, in: addressRect, fontSize: 10)
             }
         }
 
@@ -477,8 +505,14 @@ struct _099Form: View {
                 reviewRow(title: "City", value: w2.city, questionIndex: 3)
                 reviewRow(title: "State", value: w2.state, questionIndex: 4)
                 reviewRow(title: "ZIP Code", value: w2.zipCode, questionIndex: 5)
+                
                 Button {
-                    print(w2)
+                    // NEW: Trigger PDF Engine
+                    do {
+                        generatedPDFUrl = try create1099PDF(from: w2)
+                    } catch {
+                        print("Error generating 1099-NEC PDF: \(error.localizedDescription)")
+                    }
                 } label: {
                     Text("Finish")
                         .font(.headline)
@@ -488,6 +522,7 @@ struct _099Form: View {
                         .background(Color.green)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
+                
                 Button {
                     currentQuestion = 0
                     showingIntro = true
@@ -530,9 +565,7 @@ struct _099Form: View {
     }
 
     var body: some View {
-        NavigationStack {
-            _099FormGuideView()
-        }
+        _099FormGuideView()
     }
 }
 
