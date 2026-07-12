@@ -2,8 +2,6 @@
 //  BottomTabBar.swift
 //  TaxAssist
 //
-//  Created by SandboxLab on 7/6/26.
-//
 
 import SwiftUI
 
@@ -16,11 +14,11 @@ struct BottomTabBar: View {
         HStack {
             TabBarItem(icon: "house.fill", title: "Home", isSelected: true)
             Spacer()
-            TabBarItem(icon: "doc.text", title: "My Return", isSelected: false)
+            TabBarItem(icon: "folder.fill", title: "My Documents", isSelected: false)
             Spacer()
-            TabBarItem(icon: "bubble.left", title: "Messages", isSelected: false)
+            TabBarItem(icon: "bubble.left.and.bubble.right.fill", title: "Chat Bot", isSelected: false)
             Spacer()
-            TabBarItem(icon: "gearshape", title: "Settings", isSelected: false)
+            TabBarItem(icon: "gearshape.fill", title: "Settings", isSelected: false)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 32)

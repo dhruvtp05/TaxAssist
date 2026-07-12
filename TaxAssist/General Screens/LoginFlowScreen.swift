@@ -335,7 +335,6 @@ struct LoginFlowScreen: View {
                                 if let error = error {
                                     errorMessage = error.localizedDescription
                                 } else {
-                                    // Using the error message text to show a success note for now!
                                     errorMessage = "✅ Password reset email sent! Check your inbox."
                                 }
                             }

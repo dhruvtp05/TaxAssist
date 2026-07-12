@@ -2,8 +2,7 @@
 //  PrivacyPolicyScreen.swift
 //  TaxAssist
 //
-//  Created by Dhruv Patel on 7/6/26.
-//
+
 
 import SwiftUI
 
