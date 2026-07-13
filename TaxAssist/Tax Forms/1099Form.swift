@@ -1,8 +1,3 @@
-//
-//  1099Form.swift
-//  TaxAssist
-//
-
 import SwiftUI
 
 struct _099Form: View {
@@ -11,12 +6,16 @@ struct _099Form: View {
     var customDocumentName: String = "Form 1099-NEC"
     
     struct _099FormData: Codable {
-        var employeeName = ""
-        var socialSecurity = ""
+        var payerName = ""
+        var payerTIN = ""
+        var recipientName = ""
+        var recipientTIN = ""
         var streetAddress = ""
         var city = ""
         var state = ""
         var zipCode = ""
+        var nonemployeeCompensation = ""
+        var federalTaxWithheld = ""
     }
 
     enum QuestionType {
@@ -76,12 +75,16 @@ struct _099Form: View {
         var customDocumentName: String = "Form 1099-NEC"
 
         let questions: [TaxQuestion] = [
-            TaxQuestion(title: "What is your full name?", subtitle: "Your Name", placeholder: "John Smith", help: "Enter your legal name as it should appear on your 1099-NEC.", type: .text, highlight: .employeeName, definition: "Your full name is your legal first and last name."),
-            TaxQuestion(title: "What is your Social Security number?", subtitle: "Social Security Number", placeholder: "123-45-6789", help: "This is your SSN or TIN as it appears on your 1099-NEC.", type: .text, highlight: .socialSecurityNumber, definition: "Your Social Security number is the 9-digit number given to you by the Government. It is on your Social Security Card."),
-            TaxQuestion(title: "What is your street address?", subtitle: "Street Address", placeholder: "123 Main St", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress, definition: "Your street address is the house or building number and street name where you live, including unit number"),
-            TaxQuestion(title: "What city do you live in?", subtitle: "City", placeholder: "Chicago", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress, definition: "Your city is the city or town listed in your mailing address."),
-            TaxQuestion(title: "What state do you live in?", subtitle: "State", placeholder: "Illinois", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress, definition: "Your state is the U.S. state in your mailing address."),
-            TaxQuestion(title: "What is your ZIP code?", subtitle: "ZIP Code", placeholder: "60601", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress, definition: "Your ZIP code is the 5-digit postal code for your address. If you do not know it, you can enter your street address into Google to find it.")
+            TaxQuestion(title: "What is the Payer's business name?", subtitle: "Payer Name", placeholder: "Acme Corp", help: "Look at the top-left large box on your 1099-NEC.", type: .text, highlight: .payerName),
+            TaxQuestion(title: "What is the Payer's TIN?", subtitle: "Payer TIN", placeholder: "12-3456789", help: "This is the Payer's 9-digit Identification Number.", type: .text, highlight: .employerEIN),
+            TaxQuestion(title: "What is your Social Security number or TIN?", subtitle: "Recipient TIN", placeholder: "123-45-6789", help: "Look for 'RECIPIENT'S TIN' box.", type: .text, highlight: .socialSecurityNumber),
+            TaxQuestion(title: "What is your full legal name?", subtitle: "Recipient Name", placeholder: "John Smith", help: "Look for the 'RECIPIENT'S name' box.", type: .text, highlight: .employeeName),
+            TaxQuestion(title: "What is your street address?", subtitle: "Street Address", placeholder: "123 Main St", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress),
+            TaxQuestion(title: "What city do you live in?", subtitle: "City", placeholder: "Chicago", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress),
+            TaxQuestion(title: "What state do you live in?", subtitle: "State", placeholder: "Illinois", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress),
+            TaxQuestion(title: "What is your ZIP code?", subtitle: "ZIP Code", placeholder: "60601", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress),
+            TaxQuestion(title: "What is the amount in Box 1?", subtitle: "Nonemployee Compensation", placeholder: "0.00", help: "This is the total amount paid to you as an independent contractor.", type: .money, highlight: .wages),
+            TaxQuestion(title: "What is the amount in Box 4?", subtitle: "Federal Income Tax Withheld", placeholder: "0.00", help: "Enter any federal income tax withheld. Leave 0 if empty.", type: .money, highlight: .federalTax)
         ]
 
         var progress: Double {
@@ -97,7 +100,7 @@ struct _099Form: View {
                 get: { answer },
                 set: { newValue in
                     answer = newValue
-                    saveCurrentAnswer() // Instantly syncs text memory
+                    saveCurrentAnswer()
                     if !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         validationMessage = ""
                     }
@@ -181,17 +184,27 @@ struct _099Form: View {
             let fileName = "TaxAssist-\(docId)-1099"
             
             return try UniversalPDFGenerator.generate(baseImageName: "1099-NEC", outputFileName: fileName) { imageRect in
-                let nameRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.43, width: 0.48, height: 0.08, inside: imageRect)
-                UniversalPDFGenerator.drawText(data.employeeName, in: nameRect, fontSize: 11)
+                let payerRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.11, width: 0.40, height: 0.20, inside: imageRect)
+                UniversalPDFGenerator.drawText(data.payerName, in: payerRect, fontSize: 10)
                 
-                let ssRect = UniversalPDFGenerator.fieldRect(x: 0.25, y: 0.03, width: 0.21, height: 0.06, inside: imageRect)
-                UniversalPDFGenerator.drawText(data.socialSecurity, in: ssRect, fontSize: 10)
+                let pTINRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.38, width: 0.18, height: 0.04, inside: imageRect)
+                UniversalPDFGenerator.drawText(data.payerTIN, in: pTINRect, fontSize: 10)
                 
-                let address = [data.streetAddress, "\(data.city), \(data.state) \(data.zipCode)"]
-                    .filter { !$0.isEmpty }
-                    .joined(separator: "\n")
-                let addressRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.51, width: 0.48, height: 0.22, inside: imageRect)
-                UniversalPDFGenerator.drawText(address, in: addressRect, fontSize: 10)
+                let rTINRect = UniversalPDFGenerator.fieldRect(x: 0.26, y: 0.38, width: 0.20, height: 0.04, inside: imageRect)
+                UniversalPDFGenerator.drawText(data.recipientTIN, in: rTINRect, fontSize: 10)
+                
+                let nameRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.47, width: 0.40, height: 0.04, inside: imageRect)
+                UniversalPDFGenerator.drawText(data.recipientName, in: nameRect, fontSize: 11)
+                
+                let address = [data.streetAddress, "\(data.city), \(data.state) \(data.zipCode)"].filter { !$0.isEmpty }.joined(separator: "\n")
+                let addrRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.55, width: 0.40, height: 0.12, inside: imageRect)
+                UniversalPDFGenerator.drawText(address, in: addrRect, fontSize: 10)
+                
+                let box1Rect = UniversalPDFGenerator.fieldRect(x: 0.50, y: 0.38, width: 0.25, height: 0.04, inside: imageRect)
+                UniversalPDFGenerator.drawText(data.nonemployeeCompensation, in: box1Rect, fontSize: 11)
+                
+                let box4Rect = UniversalPDFGenerator.fieldRect(x: 0.50, y: 0.63, width: 0.25, height: 0.04, inside: imageRect)
+                UniversalPDFGenerator.drawText(data.federalTaxWithheld, in: box4Rect, fontSize: 11)
             }
         }
 
@@ -426,12 +439,16 @@ struct _099Form: View {
 
         func saveCurrentAnswer() {
             switch currentQuestion {
-            case 0: f1099.employeeName = answer
-            case 1: f1099.socialSecurity = answer
-            case 2: f1099.streetAddress = answer
-            case 3: f1099.city = answer
-            case 4: f1099.state = answer
-            case 5: f1099.zipCode = answer
+            case 0: f1099.payerName = answer
+            case 1: f1099.payerTIN = answer
+            case 2: f1099.recipientTIN = answer
+            case 3: f1099.recipientName = answer
+            case 4: f1099.streetAddress = answer
+            case 5: f1099.city = answer
+            case 6: f1099.state = answer
+            case 7: f1099.zipCode = answer
+            case 8: f1099.nonemployeeCompensation = answer
+            case 9: f1099.federalTaxWithheld = answer
             default: break
             }
         }
@@ -466,12 +483,16 @@ struct _099Form: View {
 
         func answerForQuestion(_ questionIndex: Int) -> String {
             switch questionIndex {
-            case 0: return f1099.employeeName
-            case 1: return f1099.socialSecurity
-            case 2: return f1099.streetAddress
-            case 3: return f1099.city
-            case 4: return f1099.state
-            case 5: return f1099.zipCode
+            case 0: return f1099.payerName
+            case 1: return f1099.payerTIN
+            case 2: return f1099.recipientTIN
+            case 3: return f1099.recipientName
+            case 4: return f1099.streetAddress
+            case 5: return f1099.city
+            case 6: return f1099.state
+            case 7: return f1099.zipCode
+            case 8: return f1099.nonemployeeCompensation
+            case 9: return f1099.federalTaxWithheld
             default: return ""
             }
         }
@@ -483,12 +504,16 @@ struct _099Form: View {
                 Text("Make sure everything looks correct.")
                     .foregroundColor(.secondary)
                 Divider()
-                reviewRow(title: "Full Name", value: f1099.employeeName, questionIndex: 0)
-                reviewRow(title: "Social Security Number", value: f1099.socialSecurity, questionIndex: 1)
-                reviewRow(title: "Street Address", value: f1099.streetAddress, questionIndex: 2)
-                reviewRow(title: "City", value: f1099.city, questionIndex: 3)
-                reviewRow(title: "State", value: f1099.state, questionIndex: 4)
-                reviewRow(title: "ZIP Code", value: f1099.zipCode, questionIndex: 5)
+                reviewRow(title: "Payer Name", value: f1099.payerName, questionIndex: 0)
+                reviewRow(title: "Payer TIN", value: f1099.payerTIN, questionIndex: 1)
+                reviewRow(title: "Recipient TIN", value: f1099.recipientTIN, questionIndex: 2)
+                reviewRow(title: "Recipient Full Name", value: f1099.recipientName, questionIndex: 3)
+                reviewRow(title: "Street Address", value: f1099.streetAddress, questionIndex: 4)
+                reviewRow(title: "City", value: f1099.city, questionIndex: 5)
+                reviewRow(title: "State", value: f1099.state, questionIndex: 6)
+                reviewRow(title: "ZIP Code", value: f1099.zipCode, questionIndex: 7)
+                reviewRow(title: "Box 1: Compensation", value: f1099.nonemployeeCompensation, questionIndex: 8)
+                reviewRow(title: "Box 4: Federal Withholding", value: f1099.federalTaxWithheld, questionIndex: 9)
                 
                 Button {
                     Task {
@@ -574,20 +599,14 @@ struct _099Form: View {
 }
 
 extension _099Form._099FormHighlight {
-    static let socialSecurityNumber = _099Form._099FormHighlight(id: "employee-social-security", title: "Recipient TIN", rect: CGRect(x: 0.25, y: 0.03, width: 0.21, height: 0.06))
-    static let employerEIN = _099Form._099FormHighlight(id: "employer-ein", title: "Payer TIN", rect: CGRect(x: 0.06, y: 0.10, width: 0.48, height: 0.06))
-    static let employerName = _099Form._099FormHighlight(id: "employer-name", title: "Payer Name/Address", rect: CGRect(x: 0.06, y: 0.16, width: 0.48, height: 0.20))
-    static let employeeName = _099Form._099FormHighlight(id: "employee-name", title: "Recipient Name", rect: CGRect(x: 0.06, y: 0.43, width: 0.48, height: 0.08))
-    static let employeeAddress = _099Form._099FormHighlight(id: "employee-address", title: "Recipient Address", rect: CGRect(x: 0.06, y: 0.51, width: 0.48, height: 0.22))
-    static let wages = _099Form._099FormHighlight(id: "wages", title: "Nonemployee Compensation", rect: CGRect(x: 0.54, y: 0.09, width: 0.20, height: 0.07))
-    static let federalTax = _099Form._099FormHighlight(id: "federal-tax", title: "Federal Tax Withheld", rect: CGRect(x: 0.74, y: 0.09, width: 0.20, height: 0.07))
-    static let socialSecurityWages = _099Form._099FormHighlight(id: "social-security-wages", title: "Other Income", rect: CGRect(x: 0.54, y: 0.16, width: 0.20, height: 0.07))
-    static let socialSecurityTax = _099Form._099FormHighlight(id: "social-security-tax", title: "Backup Withholding", rect: CGRect(x: 0.74, y: 0.16, width: 0.20, height: 0.07))
-    static let medicareWages = _099Form._099FormHighlight(id: "medicare-wages", title: "State Income", rect: CGRect(x: 0.54, y: 0.23, width: 0.20, height: 0.07))
-    static let medicareTax = _099Form._099FormHighlight(id: "medicare-tax", title: "State Tax Withheld", rect: CGRect(x: 0.74, y: 0.23, width: 0.20, height: 0.07))
-    static let state = _099Form._099FormHighlight(id: "state", title: "State", rect: CGRect(x: 0.06, y: 0.74, width: 0.04, height: 0.08))
-    static let stateTax = _099Form._099FormHighlight(id: "state-tax", title: "State Tax", rect: CGRect(x: 0.46, y: 0.74, width: 0.13, height: 0.08))
-    static let fullForm = _099Form._099FormHighlight(id: "full-form", title: "1099-NEC Form", rect: CGRect(x: 0.05, y: 0.02, width: 0.89, height: 0.86))
+    static let payerName = _099Form._099FormHighlight(id: "payer-name", title: "Payer Info", rect: CGRect(x: 0.045, y: 0.08, width: 0.43, height: 0.27))
+    static let employerEIN = _099Form._099FormHighlight(id: "employer-ein", title: "Payer TIN", rect: CGRect(x: 0.045, y: 0.35, width: 0.20, height: 0.09))
+    static let socialSecurityNumber = _099Form._099FormHighlight(id: "employee-social-security", title: "Recipient TIN", rect: CGRect(x: 0.245, y: 0.35, width: 0.23, height: 0.09))
+    static let employeeName = _099Form._099FormHighlight(id: "employee-name", title: "Recipient Name", rect: CGRect(x: 0.045, y: 0.44, width: 0.43, height: 0.08))
+    static let employeeAddress = _099Form._099FormHighlight(id: "employee-address", title: "Recipient Address", rect: CGRect(x: 0.045, y: 0.52, width: 0.43, height: 0.20))
+    static let wages = _099Form._099FormHighlight(id: "wages", title: "Box 1: Nonemployee Compensation", rect: CGRect(x: 0.48, y: 0.35, width: 0.29, height: 0.09))
+    static let federalTax = _099Form._099FormHighlight(id: "federal-tax", title: "Box 4: Federal Tax Withheld", rect: CGRect(x: 0.48, y: 0.60, width: 0.29, height: 0.09))
+    static let fullForm = _099Form._099FormHighlight(id: "full-form", title: "1099-NEC Form", rect: CGRect(x: 0.04, y: 0.02, width: 0.92, height: 0.86))
 }
 
 struct _099FormHelpView: View {
