@@ -116,7 +116,7 @@ struct W2Form: View {
             get: { answer },
             set: { newValue in
                 answer = newValue
-                saveCurrentAnswer() // Instantly syncs text memory
+                saveCurrentAnswer()
                 if !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     validationMessage = ""
                 }
@@ -528,7 +528,6 @@ struct W2Form: View {
         }
     }
 
-    // THE FIX: The PDF generator now appends the unique documentId to the filename!
     func createW2PDF(from data: W2Data, docId: String) throws -> URL {
         let fileName = "W2Form-\(docId)"
         
@@ -570,7 +569,6 @@ struct W2Form: View {
                         let jsonData = try encoder.encode(w2)
                         let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
                         
-                        // 1. Save strictly as .inProgress
                         let currentDocId = try await DatabaseManager.shared.saveDocument(
                             documentId: documentId,
                             documentName: customDocumentName,
