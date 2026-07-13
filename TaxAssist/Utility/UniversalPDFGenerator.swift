@@ -35,19 +35,16 @@ enum UniversalPDFGenerator {
     private static let pageMargin: CGFloat = 36
     private static let imageAspectRatio = 728.0 / 420.0
 
-    /// Generates a PDF using ANY base image, and uses a closure to draw the specific text.
     static func generate(
         baseImageName: String,
         outputFileName: String,
         drawFields: (_ imageRect: CGRect) -> Void
     ) throws -> URL {
         
-        // 1. Find the base image
         guard let formImage = UIImage(named: baseImageName) else {
             throw PDFGenerationError.missingFormImage(baseImageName)
         }
 
-        // 2. Set up the file path
         let fileURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(safeFileName(from: outputFileName))
 
@@ -55,7 +52,6 @@ enum UniversalPDFGenerator {
             try FileManager.default.removeItem(at: fileURL)
         }
 
-        // 3. Render the PDF
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
 
         try renderer.writePDF(to: fileURL) { context in

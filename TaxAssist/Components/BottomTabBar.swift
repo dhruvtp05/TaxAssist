@@ -5,20 +5,25 @@
 
 import SwiftUI
 
-struct BottomTabBar: View {
-    var body: some View {
-        bottomTabBar
-    }
+enum Tab {
+    case home
+    case documents
+    case chat
+    case settings
+}
 
-    private var bottomTabBar: some View {
+struct BottomTabBar: View {
+    @Binding var selectedTab: Tab
+    
+    var body: some View {
         HStack {
-            TabBarItem(icon: "house.fill", title: "Home", isSelected: true)
+            TabBarItem(icon: "house.fill", title: "Home", tab: .home, selectedTab: $selectedTab)
             Spacer()
-            TabBarItem(icon: "folder.fill", title: "My Documents", isSelected: false)
+            TabBarItem(icon: "folder.fill", title: "My Documents", tab: .documents, selectedTab: $selectedTab)
             Spacer()
-            TabBarItem(icon: "bubble.left.and.bubble.right.fill", title: "Chat Bot", isSelected: false)
+            TabBarItem(icon: "bubble.left.and.bubble.right.fill", title: "Chat Bot", tab: .chat, selectedTab: $selectedTab)
             Spacer()
-            TabBarItem(icon: "gearshape.fill", title: "Settings", isSelected: false)
+            TabBarItem(icon: "gearshape.fill", title: "Settings", tab: .settings, selectedTab: $selectedTab)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 32)
@@ -35,19 +40,25 @@ struct BottomTabBar: View {
 private struct TabBarItem: View {
     let icon: String
     let title: String
-    let isSelected: Bool
+    let tab: Tab
+    @Binding var selectedTab: Tab
 
     var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 22))
-            Text(title)
-                .font(.caption2)
+        Button {
+            selectedTab = tab
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 22))
+                Text(title)
+                    .font(.caption2)
+            }
+            .foregroundColor(selectedTab == tab ? .blue : .secondary)
         }
-        .foregroundColor(isSelected ? .blue : .secondary)
+        .buttonStyle(.plain)
     }
 }
 
 #Preview {
-    BottomTabBar()
+    BottomTabBar(selectedTab: .constant(.home))
 }

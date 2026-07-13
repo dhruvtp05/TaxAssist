@@ -20,7 +20,7 @@ struct TaxAssistApp: App {
         WindowGroup {
             Group {
                 if isLoggedIn {
-                    HomeScreen()
+                    MainAppView()
                 } else {
                     LoginFlowScreen()
                 }

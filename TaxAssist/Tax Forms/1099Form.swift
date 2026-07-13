@@ -2,13 +2,15 @@
 //  1099Form.swift
 //  TaxAssist
 //
-//  Created by SandboxLab on 7/7/26.
-//
 
 import SwiftUI
 
 struct _099Form: View {
-    struct _099FormData {
+    var initialDocumentId: String? = nil
+    var encryptedData: String? = nil
+    var customDocumentName: String = "Form 1099-NEC"
+    
+    struct _099FormData: Codable {
         var employeeName = ""
         var socialSecurity = ""
         var streetAddress = ""
@@ -17,15 +19,11 @@ struct _099Form: View {
         var zipCode = ""
     }
 
-    // MARK: - Question Types
-
     enum QuestionType {
         case text
         case money
         case yesNo
     }
-
-    // MARK: - Question Model
 
     struct TaxQuestion: Identifiable {
         let id = UUID()
@@ -54,10 +52,7 @@ struct _099Form: View {
         let rect: CGRect
     }
 
-    // MARK: - Main View
-
     struct _099FormGuideView: View {
-        // Current Question
         @State private var currentQuestion = 0
         @State private var showingIntro = true
         @State private var showingReview = false
@@ -66,73 +61,27 @@ struct _099Form: View {
         @State private var definitionMessage = ""
         @State private var showingDefinition = false
 
-        // User Input
         @State private var answer = ""
         @State private var validationMessage = ""
         @State private var yesNoAnswer = true
         
-        // NEW: Stores the generated URL to trigger navigation
-        @State private var generatedPDFUrl: URL?
+        @State private var previewData: PDFPreviewData?
+        
+        @State private var documentId: String? = nil
 
-        // Stores all information
-        @State private var w2 = _099FormData()
+        @State private var f1099 = _099FormData()
+        
+        var initialDocumentId: String? = nil
+        var encryptedData: String? = nil
+        var customDocumentName: String = "Form 1099-NEC"
 
-        // Questions
         let questions: [TaxQuestion] = [
-            TaxQuestion(
-                title: "What is your full name?",
-                subtitle: "Your Name",
-                placeholder: "John Smith",
-                help: "Enter your legal name as it should appear on your 1099-NEC.",
-                type: .text,
-                highlight: .employeeName,
-                definition: "Your full name is your legal first and last name."
-            ),
-            TaxQuestion(
-                title: "What is your Social Security number?",
-                subtitle: "Social Security Number",
-                placeholder: "123-45-6789",
-                help: "This is your SSN or TIN as it appears on your 1099-NEC.",
-                type: .text,
-                highlight: .socialSecurityNumber,
-                definition: "Your Social Security number is the 9-digit number given to you by the Government. It is on your Social Security Card."
-            ),
-            TaxQuestion(
-                title: "What is your street address?",
-                subtitle: "Street Address",
-                placeholder: "123 Main St",
-                help: "Use the mailing address on your 1099-NEC.",
-                type: .text,
-                highlight: .employeeAddress,
-                definition: "Your street address is the house or building number and street name where you live, including unit number"
-            ),
-            TaxQuestion(
-                title: "What city do you live in?",
-                subtitle: "City",
-                placeholder: "Chicago",
-                help: "Use the mailing address on your 1099-NEC.",
-                type: .text,
-                highlight: .employeeAddress,
-                definition: "Your city is the city or town listed in your mailing address."
-            ),
-            TaxQuestion(
-                title: "What state do you live in?",
-                subtitle: "State",
-                placeholder: "Illinois",
-                help: "Use the mailing address on your 1099-NEC.",
-                type: .text,
-                highlight: .employeeAddress,
-                definition: "Your state is the U.S. state in your mailing address."
-            ),
-            TaxQuestion(
-                title: "What is your ZIP code?",
-                subtitle: "ZIP Code",
-                placeholder: "60601",
-                help: "Use the mailing address on your 1099-NEC.",
-                type: .text,
-                highlight: .employeeAddress,
-                definition: "Your ZIP code is the 5-digit postal code for your address. If you do not know it, you can enter your street address into Google to find it."
-            )
+            TaxQuestion(title: "What is your full name?", subtitle: "Your Name", placeholder: "John Smith", help: "Enter your legal name as it should appear on your 1099-NEC.", type: .text, highlight: .employeeName, definition: "Your full name is your legal first and last name."),
+            TaxQuestion(title: "What is your Social Security number?", subtitle: "Social Security Number", placeholder: "123-45-6789", help: "This is your SSN or TIN as it appears on your 1099-NEC.", type: .text, highlight: .socialSecurityNumber, definition: "Your Social Security number is the 9-digit number given to you by the Government. It is on your Social Security Card."),
+            TaxQuestion(title: "What is your street address?", subtitle: "Street Address", placeholder: "123 Main St", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress, definition: "Your street address is the house or building number and street name where you live, including unit number"),
+            TaxQuestion(title: "What city do you live in?", subtitle: "City", placeholder: "Chicago", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress, definition: "Your city is the city or town listed in your mailing address."),
+            TaxQuestion(title: "What state do you live in?", subtitle: "State", placeholder: "Illinois", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress, definition: "Your state is the U.S. state in your mailing address."),
+            TaxQuestion(title: "What is your ZIP code?", subtitle: "ZIP Code", placeholder: "60601", help: "Use the mailing address on your 1099-NEC.", type: .text, highlight: .employeeAddress, definition: "Your ZIP code is the 5-digit postal code for your address. If you do not know it, you can enter your street address into Google to find it.")
         ]
 
         var progress: Double {
@@ -148,6 +97,7 @@ struct _099Form: View {
                 get: { answer },
                 set: { newValue in
                     answer = newValue
+                    saveCurrentAnswer() // Instantly syncs text memory
                     if !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         validationMessage = ""
                     }
@@ -172,11 +122,25 @@ struct _099Form: View {
                 .padding()
             }
             .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle("1099-NEC Guide")
+            .navigationTitle(customDocumentName)
             .navigationBarTitleDisplayMode(.inline)
-            // NEW: Triggers the PDF Preview screen when we have a URL!
-            .navigationDestination(item: $generatedPDFUrl) { url in
-                PDFPreviewScreen(pdfURL: url)
+            .onAppear {
+                if let docId = initialDocumentId, let encData = encryptedData, documentId == nil {
+                    self.documentId = docId
+                    
+                    do {
+                        let decryptedString = try SecurityManager.shared.decrypt(encData)
+                        if let rawData = decryptedString.data(using: .utf8) {
+                            self.f1099 = try JSONDecoder().decode(_099FormData.self, from: rawData)
+                            loadAnswerForCurrentQuestion()
+                        }
+                    } catch {
+                        print("Failed to decrypt saved document: \(error.localizedDescription)")
+                    }
+                }
+            }
+            .navigationDestination(item: $previewData) { data in
+                PDFPreviewScreen(pdfURL: data.url, documentId: data.documentId)
             }
             .sheet(isPresented: $showingHelp) {
                 _099FormHelpView(highlight: currentHighlight)
@@ -188,13 +152,35 @@ struct _099Form: View {
             }
         }
 
-        // MARK: - Logic Functions
+        func saveInProgress() {
+            Task {
+                do {
+                    let encoder = JSONEncoder()
+                    let jsonData = try encoder.encode(f1099)
+                    let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
+                    
+                    let newId = try await DatabaseManager.shared.saveDocument(
+                        documentId: documentId,
+                        documentName: customDocumentName,
+                        formType: "Form 1099-NEC",
+                        status: .inProgress,
+                        pdfUrl: nil,
+                        rawData: jsonString
+                    )
+                    
+                    await MainActor.run {
+                        self.documentId = newId
+                    }
+                } catch {
+                    print("Failed to save in progress: \(error.localizedDescription)")
+                }
+            }
+        }
         
-        // NEW: PDF Generator Function
-        func create1099PDF(from data: _099FormData) throws -> URL {
-            let fileName = "TaxAssist-\(data.employeeName)-1099"
+        func create1099PDF(from data: _099FormData, docId: String) throws -> URL {
+            let fileName = "TaxAssist-\(docId)-1099"
             
-            return try UniversalPDFGenerator.generate(baseImageName: "Form1099", outputFileName: fileName) { imageRect in
+            return try UniversalPDFGenerator.generate(baseImageName: "1099-NEC", outputFileName: fileName) { imageRect in
                 let nameRect = UniversalPDFGenerator.fieldRect(x: 0.06, y: 0.43, width: 0.48, height: 0.08, inside: imageRect)
                 UniversalPDFGenerator.drawText(data.employeeName, in: nameRect, fontSize: 11)
                 
@@ -209,7 +195,6 @@ struct _099Form: View {
             }
         }
 
-        // MARK: - Intro Card
         private var introCard: some View {
             VStack(alignment: .leading, spacing: 18) {
                 Image(systemName: "doc.text.magnifyingglass")
@@ -248,7 +233,6 @@ struct _099Form: View {
             }
         }
 
-        // MARK: - Progress Card
         private var progressCard: some View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
@@ -284,7 +268,6 @@ struct _099Form: View {
             .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
         }
 
-        // MARK: - Question Card
         private var questionCard: some View {
             let question = questions[currentQuestion]
             return VStack(alignment: .leading, spacing: 20) {
@@ -383,7 +366,6 @@ struct _099Form: View {
             .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
         }
 
-        // MARK: - Question Navigation
         private var questionNavigationButtons: some View {
             HStack(spacing: 12) {
                 if currentQuestion > 0 {
@@ -423,6 +405,7 @@ struct _099Form: View {
 
         func goToPreviousQuestion() {
             saveCurrentAnswer()
+            saveInProgress()
             if currentQuestion > 0 {
                 currentQuestion -= 1
                 loadAnswerForCurrentQuestion()
@@ -432,6 +415,7 @@ struct _099Form: View {
         func goToNextQuestion() {
             guard validateCurrentAnswer() else { return }
             saveCurrentAnswer()
+            saveInProgress()
             if currentQuestion < questions.count - 1 {
                 currentQuestion += 1
                 loadAnswerForCurrentQuestion()
@@ -442,12 +426,12 @@ struct _099Form: View {
 
         func saveCurrentAnswer() {
             switch currentQuestion {
-            case 0: w2.employeeName = answer
-            case 1: w2.socialSecurity = answer
-            case 2: w2.streetAddress = answer
-            case 3: w2.city = answer
-            case 4: w2.state = answer
-            case 5: w2.zipCode = answer
+            case 0: f1099.employeeName = answer
+            case 1: f1099.socialSecurity = answer
+            case 2: f1099.streetAddress = answer
+            case 3: f1099.city = answer
+            case 4: f1099.state = answer
+            case 5: f1099.zipCode = answer
             default: break
             }
         }
@@ -482,12 +466,12 @@ struct _099Form: View {
 
         func answerForQuestion(_ questionIndex: Int) -> String {
             switch questionIndex {
-            case 0: return w2.employeeName
-            case 1: return w2.socialSecurity
-            case 2: return w2.streetAddress
-            case 3: return w2.city
-            case 4: return w2.state
-            case 5: return w2.zipCode
+            case 0: return f1099.employeeName
+            case 1: return f1099.socialSecurity
+            case 2: return f1099.streetAddress
+            case 3: return f1099.city
+            case 4: return f1099.state
+            case 5: return f1099.zipCode
             default: return ""
             }
         }
@@ -499,22 +483,41 @@ struct _099Form: View {
                 Text("Make sure everything looks correct.")
                     .foregroundColor(.secondary)
                 Divider()
-                reviewRow(title: "Full Name", value: w2.employeeName, questionIndex: 0)
-                reviewRow(title: "Social Security Number", value: w2.socialSecurity, questionIndex: 1)
-                reviewRow(title: "Street Address", value: w2.streetAddress, questionIndex: 2)
-                reviewRow(title: "City", value: w2.city, questionIndex: 3)
-                reviewRow(title: "State", value: w2.state, questionIndex: 4)
-                reviewRow(title: "ZIP Code", value: w2.zipCode, questionIndex: 5)
+                reviewRow(title: "Full Name", value: f1099.employeeName, questionIndex: 0)
+                reviewRow(title: "Social Security Number", value: f1099.socialSecurity, questionIndex: 1)
+                reviewRow(title: "Street Address", value: f1099.streetAddress, questionIndex: 2)
+                reviewRow(title: "City", value: f1099.city, questionIndex: 3)
+                reviewRow(title: "State", value: f1099.state, questionIndex: 4)
+                reviewRow(title: "ZIP Code", value: f1099.zipCode, questionIndex: 5)
                 
                 Button {
-                    // NEW: Trigger PDF Engine
-                    do {
-                        generatedPDFUrl = try create1099PDF(from: w2)
-                    } catch {
-                        print("Error generating 1099-NEC PDF: \(error.localizedDescription)")
+                    Task {
+                        do {
+                            let encoder = JSONEncoder()
+                            let jsonData = try encoder.encode(f1099)
+                            let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
+                            
+                            let currentDocId = try await DatabaseManager.shared.saveDocument(
+                                documentId: documentId,
+                                documentName: customDocumentName,
+                                formType: "Form 1099-NEC",
+                                status: .inProgress,
+                                pdfUrl: nil,
+                                rawData: jsonString
+                            )
+                            
+                            let localUrl = try create1099PDF(from: f1099, docId: currentDocId)
+                            
+                            await MainActor.run {
+                                self.documentId = currentDocId
+                                previewData = PDFPreviewData(url: localUrl, documentId: currentDocId)
+                            }
+                        } catch {
+                            print("Failed to prepare PDF: \(error.localizedDescription)")
+                        }
                     }
                 } label: {
-                    Text("Finish")
+                    Text("Review PDF")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -528,7 +531,8 @@ struct _099Form: View {
                     showingIntro = true
                     showingReview = false
                     answer = ""
-                    w2 = _099FormData()
+                    documentId = nil
+                    f1099 = _099FormData()
                 } label: {
                     Text("Start Over")
                         .frame(maxWidth: .infinity)
@@ -565,11 +569,10 @@ struct _099Form: View {
     }
 
     var body: some View {
-        _099FormGuideView()
+        _099FormGuideView(initialDocumentId: initialDocumentId, encryptedData: encryptedData, customDocumentName: customDocumentName)
     }
 }
 
-// MARK: - Highlights (file-scope extension)
 extension _099Form._099FormHighlight {
     static let socialSecurityNumber = _099Form._099FormHighlight(id: "employee-social-security", title: "Recipient TIN", rect: CGRect(x: 0.25, y: 0.03, width: 0.21, height: 0.06))
     static let employerEIN = _099Form._099FormHighlight(id: "employer-ein", title: "Payer TIN", rect: CGRect(x: 0.06, y: 0.10, width: 0.48, height: 0.06))
@@ -608,7 +611,7 @@ struct _099FormHelpView: View {
                                 height: highlight.rect.height * imageFrame.height
                             )
                             ZStack(alignment: .topLeading) {
-                                Image("Form1099")
+                                Image("1099-NEC")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: proxy.size.width, height: proxy.size.height)
