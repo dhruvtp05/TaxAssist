@@ -1,5 +1,12 @@
+//
+//  HomeScreen.swift
+//  TaxAssist
+//
+
 import SwiftUI
 import FirebaseAuth
+
+// MARK: - Models
 
 struct ActionItem: Identifiable {
     let id = UUID()
@@ -29,6 +36,8 @@ struct DocumentRoute: Hashable {
     let documentName: String
 }
 
+// MARK: - Home Screen
+
 struct HomeScreen: View {
     @Binding var selectedTab: Tab
     
@@ -38,6 +47,13 @@ struct HomeScreen: View {
     
     @State private var activeRoute: DocumentRoute?
     
+    // Controls presenting the Tax Dictionary screen
+    @State private var showTaxDictionary: Bool = false
+    
+    // Controls programmatic navigation to FAQs
+    @State private var showFAQs: Bool = false
+    
+    // Placeholder data for when a document IS active
     let currentStep: Int = 2
     let totalSteps: Int = 10
 
@@ -94,6 +110,9 @@ struct HomeScreen: View {
             .sheet(isPresented: $showFormSelector) {
                 AvailableFormsSheet(activeRoute: $activeRoute)
             }
+            .sheet(isPresented: $showTaxDictionary) {
+                TaxDictionary()
+            }
             .navigationDestination(item: $activeRoute) { route in
                 switch route.form {
                 case .w2:
@@ -103,6 +122,9 @@ struct HomeScreen: View {
                     _099Form(customDocumentName: route.documentName)
                         .toolbar(.hidden, for: .tabBar)
                 }
+            }
+            .navigationDestination(isPresented: $showFAQs) {
+                FAQs()
             }
         }
     }
@@ -259,14 +281,30 @@ struct HomeScreen: View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible())], spacing: 16) {
             ForEach(actions) { action in
                 ActionCard(item: action) {
-                    if action.title == "My Documents" {
-                        selectedTab = .documents
-                    }
+                    handleActionTap(action)
                 }
+                .buttonStyle(.plain)
             }
         }
     }
+
+    // MARK: Action Grid Routing
+
+    private func handleActionTap(_ action: ActionItem) {
+        switch action.title {
+        case "Tax Dictionary":
+            showTaxDictionary = true
+        case "FAQs":
+            showFAQs = true
+        case "My Documents":
+            selectedTab = .documents
+        default:
+            break
+        }
+    }
 }
+
+// MARK: - Action Card
 
 struct ActionCard: View {
     let item: ActionItem
@@ -311,9 +349,10 @@ struct ActionCard: View {
                     .stroke(Color(uiColor: .systemGray5), lineWidth: 1)
             )
         }
-        .buttonStyle(.plain)
     }
 }
+
+// MARK: - Available Forms Sheet
 
 struct AvailableFormsSheet: View {
     @Environment(\.dismiss) var dismiss
@@ -394,6 +433,8 @@ struct AvailableFormsSheet: View {
         .presentationDetents([.medium, .large])
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     HomeScreen(selectedTab: .constant(.home))
