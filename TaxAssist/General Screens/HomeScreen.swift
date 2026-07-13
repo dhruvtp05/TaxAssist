@@ -45,6 +45,9 @@ struct HomeScreen: View {
     // This tracks which form the user clicked in the popup
     @State private var selectedDocument: TaxDocument?
     
+    // Controls presenting the Tax Dictionary screen
+    @State private var showTaxDictionary: Bool = false
+    
     // Placeholder data for when a document IS active
     let currentStep: Int = 2
     let totalSteps: Int = 10
@@ -104,6 +107,9 @@ struct HomeScreen: View {
             }
             .sheet(isPresented: $showFormSelector) {
                 AvailableFormsSheet(selectedDocument: $selectedDocument)
+            }
+            .sheet(isPresented: $showTaxDictionary) {
+                TaxDictionary()
             }
             .navigationDestination(item: $selectedDocument) { document in
                 switch document {
@@ -279,8 +285,30 @@ struct HomeScreen: View {
     private var actionGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible())], spacing: 16) {
             ForEach(actions) { action in
-                ActionCard(item: action)
+                ActionCard(item: action) {
+                    handleActionTap(action)
+                }
             }
+        }
+    }
+
+    // MARK: Action Grid Routing
+
+    private func handleActionTap(_ action: ActionItem) {
+        switch action.title {
+        case "Tax Dictionary":
+            showTaxDictionary = true
+        case "My Documents":
+            // TODO: hook up MyDocumentsScreen
+            break
+        case "FAQs":
+            // TODO: hook up FAQs
+            break
+        case "Accessibility Settings":
+            // TODO: hook up Accessibility Settings
+            break
+        default:
+            break
         }
     }
 }
@@ -289,9 +317,10 @@ struct HomeScreen: View {
 
 struct ActionCard: View {
     let item: ActionItem
+    var onTap: () -> Void = {}
 
     var body: some View {
-        Button(action: {}) {
+        Button(action: onTap) {
             VStack(alignment: .leading, spacing: 14) {
                 ZStack {
                     Circle()
