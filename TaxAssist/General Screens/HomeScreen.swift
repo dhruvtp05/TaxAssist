@@ -3,7 +3,6 @@
 //  TaxAssist
 //
 
-
 import SwiftUI
 import FirebaseAuth
 
@@ -285,8 +284,18 @@ struct HomeScreen: View {
     private var actionGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible())], spacing: 16) {
             ForEach(actions) { action in
-                ActionCard(item: action) {
-                    handleActionTap(action)
+                if action.title == "FAQs" {
+                    NavigationLink(destination: FAQs()) {
+                        ActionCard(item: action)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Button {
+                        handleActionTap(action)
+                    } label: {
+                        ActionCard(item: action)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -301,9 +310,6 @@ struct HomeScreen: View {
         case "My Documents":
             // TODO: hook up MyDocumentsScreen
             break
-        case "FAQs":
-            // TODO: hook up FAQs
-            break
         case "Accessibility Settings":
             // TODO: hook up Accessibility Settings
             break
@@ -317,49 +323,44 @@ struct HomeScreen: View {
 
 struct ActionCard: View {
     let item: ActionItem
-    var onTap: () -> Void = {}
 
     var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 14) {
-                ZStack {
-                    Circle()
-                        .fill(item.iconBackground)
-                        .frame(width: 48, height: 48)
-                    Image(systemName: item.icon)
-                        .font(.system(size: 20))
-                        .foregroundColor(item.iconColor)
-                }
-
-                Text(item.title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .multilineTextAlignment(.leading)
-
-                HStack(alignment: .bottom) {
-                    Text(item.subtitle)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Spacer()
-                    Image(systemName: "arrow.right")
-                        .font(.caption.bold())
-                        .foregroundColor(.secondary)
-                }
+        VStack(alignment: .leading, spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(item.iconBackground)
+                    .frame(width: 48, height: 48)
+                Image(systemName: item.icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(item.iconColor)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            // FIXED HEIGHT: This locks them all to the exact same size.
-            .frame(height: 180, alignment: .top)
-            .background(Color(uiColor: .systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(Color(uiColor: .systemGray5), lineWidth: 1)
-            )
+
+            Text(item.title)
+                .font(.headline)
+                .foregroundColor(.primary)
+                .multilineTextAlignment(.leading)
+
+            HStack(alignment: .bottom) {
+                Text(item.subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .font(.caption.bold())
+                    .foregroundColor(.secondary)
+            }
         }
-        .buttonStyle(.plain)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 180, alignment: .top)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color(uiColor: .systemGray5), lineWidth: 1)
+        )
     }
 }
 
@@ -404,7 +405,6 @@ struct AvailableFormsSheet: View {
         .presentationDetents([.medium, .large])
     }
 }
-
 // MARK: - Preview
 
 #Preview {
