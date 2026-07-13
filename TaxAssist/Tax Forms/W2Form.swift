@@ -85,6 +85,7 @@ struct W2Form: View {
     @State private var definitionTitle = ""
     @State private var definitionMessage = ""
     @State private var showingDefinition = false
+    @State private var showingTaxDictionary = false
 
     // User Input
     @State private var answer = ""
@@ -194,12 +195,25 @@ struct W2Form: View {
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle("W-2 Guide")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showingTaxDictionary = true
+                } label: {
+                    Image(systemName: "lightbulb.fill")
+                        .foregroundColor(.orange)
+                }
+            }
+        }
         // NEW: Triggers the PDF Preview screen when we have a URL!
         .navigationDestination(item: $generatedPDFUrl) { url in
             PDFPreviewScreen(pdfURL: url)
         }
         .sheet(isPresented: $showingW2Help) {
             W2FormHelpView(highlight: currentHighlight)
+        }
+        .sheet(isPresented: $showingTaxDictionary) {
+            TaxDictionary()
         }
         .alert(definitionTitle, isPresented: $showingDefinition) {
             Button("OK", role: .cancel) { }
@@ -380,6 +394,29 @@ struct W2Form: View {
                             .font(.headline)
                             .foregroundColor(.primary)
                         Text(question.help)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.secondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                showingTaxDictionary = true
+            } label: {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "character.book.closed.fill")
+                        .foregroundColor(.blue)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Confused by a term?")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Text("Look it up in the Tax Dictionary")
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.leading)
                     }

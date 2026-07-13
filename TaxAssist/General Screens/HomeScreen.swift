@@ -3,7 +3,6 @@
 //  TaxAssist
 //
 
-
 import SwiftUI
 import FirebaseAuth
 
@@ -44,6 +43,9 @@ struct HomeScreen: View {
     
     // This tracks which form the user clicked in the popup
     @State private var selectedDocument: TaxDocument?
+    
+    // Controls presenting the Tax Dictionary screen
+    @State private var showTaxDictionary: Bool = false
     
     // Placeholder data for when a document IS active
     let currentStep: Int = 2
@@ -104,6 +106,9 @@ struct HomeScreen: View {
             }
             .sheet(isPresented: $showFormSelector) {
                 AvailableFormsSheet(selectedDocument: $selectedDocument)
+            }
+            .sheet(isPresented: $showTaxDictionary) {
+                TaxDictionary()
             }
             .navigationDestination(item: $selectedDocument) { document in
                 switch document {
@@ -286,13 +291,30 @@ struct HomeScreen: View {
                     .buttonStyle(.plain)
                 } else {
                     Button {
-                        // TODO: Hook up other actions here
+                        handleActionTap(action)
                     } label: {
                         ActionCard(item: action)
                     }
                     .buttonStyle(.plain)
                 }
             }
+        }
+    }
+
+    // MARK: Action Grid Routing
+
+    private func handleActionTap(_ action: ActionItem) {
+        switch action.title {
+        case "Tax Dictionary":
+            showTaxDictionary = true
+        case "My Documents":
+            // TODO: hook up MyDocumentsScreen
+            break
+        case "Accessibility Settings":
+            // TODO: hook up Accessibility Settings
+            break
+        default:
+            break
         }
     }
 }
