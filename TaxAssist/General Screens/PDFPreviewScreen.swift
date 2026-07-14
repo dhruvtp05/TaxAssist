@@ -75,42 +75,43 @@ struct PDFPreviewScreen: View {
     }
     
     private var completionView: some View {
-            VStack(spacing: 24) {
-                Spacer()
-                
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 100))
-                    .foregroundColor(.green)
-                
-                Text("Document Completed!")
-                    .font(.largeTitle.bold())
-                    .multilineTextAlignment(.center)
-                
-                Text("Your tax form has been securely encrypted and saved to your cloud records.")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
-                
-                Spacer()
-                
-                Button {
-                    NavigationUtil.popToRootView()
-                } label: {
-                    Text("Go to Home Screen")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Color.blue)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 90)
+        VStack(spacing: 24) {
+            Spacer()
+            
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 100))
+                .foregroundColor(.green)
+            
+            Text("Document Completed!")
+                .font(.largeTitle.bold())
+                .multilineTextAlignment(.center)
+            
+            Text("Your tax form has been securely encrypted and saved to your cloud records.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            
+            Spacer()
+            
+            Button {
+                NavigationUtil.popToRootView()
+            } label: {
+                Text("Go to Home Screen")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Color.blue)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationBarBackButtonHidden(true)
+            .padding(.horizontal)
+            .padding(.bottom, 90)
         }
+        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+        .navigationBarBackButtonHidden(true)
+    }
+
     // MARK: - Logic
     
     private func completeDocument(docId: String) {
@@ -141,10 +142,27 @@ struct PDFKitView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> PDFView {
         let pdfView = PDFView()
+
         pdfView.document = PDFDocument(url: url)
-        pdfView.autoScales = true
+
+        // Do not automatically fit the PDF to the screen
+        pdfView.autoScales = false
+
+        // Show the PDF at its natural scale
+        pdfView.scaleFactor = 1.0
+
+        // Allow zooming
+        pdfView.minScaleFactor = 0.5
+        pdfView.maxScaleFactor = 5.0
+
+        // One continuous document
         pdfView.displayMode = .singlePageContinuous
+
+        // Allow movement in both directions
+        pdfView.displayDirection = .vertical
+
         pdfView.backgroundColor = .systemGroupedBackground
+
         return pdfView
     }
 
