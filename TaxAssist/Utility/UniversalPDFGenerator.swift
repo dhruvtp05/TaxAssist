@@ -1,6 +1,6 @@
 //
-//  UniversalPDFGenerator.swift
-//  TaxAssist
+//   UniversalPDFGenerator.swift
+//   TaxAssist
 //
 
 import SwiftUI
@@ -74,7 +74,6 @@ enum UniversalPDFGenerator {
         }
 
         // Open PDF
-
         guard let pdfDocument = PDFDocument(url: pdfURL) else {
             throw PDFGenerationError.unableToOpenPDF(baseImageName)
         }
@@ -84,11 +83,9 @@ enum UniversalPDFGenerator {
         }
 
         // Get exact PDF page size
-
         let pageRect = pdfPage.bounds(for: .mediaBox)
 
         // Create output URL
-
         let fileURL = FileManager.default
             .temporaryDirectory
             .appendingPathComponent(
@@ -100,7 +97,6 @@ enum UniversalPDFGenerator {
         }
 
         // Create PDF renderer using original PDF size
-
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
 
         try renderer.writePDF(to: fileURL) { context in
@@ -110,11 +106,9 @@ enum UniversalPDFGenerator {
             let cgContext = context.cgContext
 
             // Save graphics state
-
             cgContext.saveGState()
 
             // PDF coordinate system correction
-
             cgContext.translateBy(
                 x: 0,
                 y: pageRect.height
@@ -126,18 +120,15 @@ enum UniversalPDFGenerator {
             )
 
             // Draw original PDF page
-
             pdfPage.draw(
                 with: .mediaBox,
                 to: cgContext
             )
 
             // Restore normal UIKit coordinates
-
             cgContext.restoreGState()
 
             // Draw form answers
-
             drawFields(pageRect)
         }
 

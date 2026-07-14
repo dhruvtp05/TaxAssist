@@ -2,14 +2,15 @@
 //  W2Form.swift
 //  TaxAssist
 //
-//  Created by ChatGPT
-//
 
 import SwiftUI
 
-// MARK: - W2 Data Model
+struct PDFPreviewData: Hashable {
+    let url: URL
+    let documentId: String?
+}
 
-struct W2Data {
+struct W2Data: Codable {
     var employeeName = ""
     var socialSecurity = ""
     var streetAddress = ""
@@ -18,18 +19,13 @@ struct W2Data {
     var zipCode = ""
 }
 
-// MARK: - Question Types
-
 enum QuestionType {
     case text
     case money
     case yesNo
 }
 
-// MARK: - Question Model
-
 struct TaxQuestion: Identifiable {
-
     let id = UUID()
     let title: String
     let subtitle: String
@@ -73,11 +69,9 @@ extension W2Highlight {
     static let fullForm = W2Highlight(id: "full-form", title: "W-2 Form", rect: CGRect(x: 0.05, y: 0.02, width: 0.89, height: 0.86))
 }
 
-// MARK: - Main View
-
 struct W2Form: View {
+    var customDocumentName: String = "Form W-2"
 
-    // Current Question
     @State private var currentQuestion = 0
     @State private var showingIntro = true
     @State private var showingReview = false
@@ -87,73 +81,26 @@ struct W2Form: View {
     @State private var showingDefinition = false
     @State private var showingTaxDictionary = false
 
-    // User Input
     @State private var answer = ""
     @State private var validationMessage = ""
     @State private var yesNoAnswer = true
     
-    // NEW: Stores the generated URL to trigger navigation
-    @State private var generatedPDFUrl: URL?
+    @State private var previewData: PDFPreviewData?
+    
+    @State private var documentId: String? = nil
 
-    // Stores all information
     @State private var w2 = W2Data()
+    
+    var initialDocumentId: String? = nil
+    var encryptedData: String? = nil
 
-    // Questions
     let questions: [TaxQuestion] = [
-        TaxQuestion(
-            title: "What is your full name?",
-            subtitle: "Your Name",
-            placeholder: "John Smith",
-            help: "Enter your legal name as it appears on your W-2.",
-            type: .text,
-            highlight: .employeeName,
-            definition: "Your full name is your legal first and last name."
-        ),
-        TaxQuestion(
-            title: "What is your Social Security number?",
-            subtitle: "Social Security Number",
-            placeholder: "123-45-6789",
-            help: "Look for Box a on your W-2.",
-            type: .text,
-            highlight: .socialSecurityNumber,
-            definition: "Your Social Security number is the 9-digit number given to you by the Government. It is on your Social Security Card."
-        ),
-        TaxQuestion(
-            title: "What is your street address?",
-            subtitle: "Street Address",
-            placeholder: "123 Main St",
-            help: "Look for Box f on your W-2.",
-            type: .text,
-            highlight: .employeeAddress,
-            definition: "Your street address is the house or building number and street name where you live, including unit number"
-        ),
-        TaxQuestion(
-            title: "What city do you live in?",
-            subtitle: "City",
-            placeholder: "Chicago",
-            help: "Look for Box f on your W-2.",
-            type: .text,
-            highlight: .employeeAddress,
-            definition: "Your city is the city or town listed in your mailing address."
-        ),
-        TaxQuestion(
-            title: "What state do you live in?",
-            subtitle: "State",
-            placeholder: "Illinois",
-            help: "Look for Box f on your W-2.",
-            type: .text,
-            highlight: .employeeAddress,
-            definition: "Your state is the U.S. state in your mailing address."
-        ),
-        TaxQuestion(
-            title: "What is your ZIP code?",
-            subtitle: "ZIP Code",
-            placeholder: "60601",
-            help: "Look for Box f on your W-2.",
-            type: .text,
-            highlight: .employeeAddress,
-            definition: "Your ZIP code is the 5-digit postal code for your address. If you do not know it, you can enter your street address into Google to find it."
-        )
+        TaxQuestion(title: "What is your full name?", subtitle: "Your Name", placeholder: "John Smith", help: "Enter your legal name as it appears on your W-2.", type: .text, highlight: .employeeName, definition: "Your full name is your legal first and last name."),
+        TaxQuestion(title: "What is your Social Security number?", subtitle: "Social Security Number", placeholder: "123-45-6789", help: "Look for Box a on your W-2.", type: .text, highlight: .socialSecurityNumber, definition: "Your Social Security number is the 9-digit number given to you by the Government. It is on your Social Security Card."),
+        TaxQuestion(title: "What is your street address?", subtitle: "Street Address", placeholder: "123 Main St", help: "Look for Box f on your W-2.", type: .text, highlight: .employeeAddress, definition: "Your street address is the house or building number and street name where you live, including unit number"),
+        TaxQuestion(title: "What city do you live in?", subtitle: "City", placeholder: "Chicago", help: "Look for Box f on your W-2.", type: .text, highlight: .employeeAddress, definition: "Your city is the city or town listed in your mailing address."),
+        TaxQuestion(title: "What state do you live in?", subtitle: "State", placeholder: "Illinois", help: "Look for Box f on your W-2.", type: .text, highlight: .employeeAddress, definition: "Your state is the U.S. state in your mailing address."),
+        TaxQuestion(title: "What is your ZIP code?", subtitle: "ZIP Code", placeholder: "60601", help: "Look for Box f on your W-2.", type: .text, highlight: .employeeAddress, definition: "Your ZIP code is the 5-digit postal code for your address. If you do not know it, you can enter your street address into Google to find it.")
     ]
 
     var progress: Double {
@@ -169,6 +116,7 @@ struct W2Form: View {
             get: { answer },
             set: { newValue in
                 answer = newValue
+                saveCurrentAnswer()
                 if !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     validationMessage = ""
                 }
@@ -193,8 +141,23 @@ struct W2Form: View {
             .padding()
         }
         .background(Color(uiColor: .systemGroupedBackground))
-        .navigationTitle("W-2 Guide")
+        .navigationTitle(customDocumentName)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if let docId = initialDocumentId, let encData = encryptedData, documentId == nil {
+                self.documentId = docId
+                
+                do {
+                    let decryptedString = try SecurityManager.shared.decrypt(encData)
+                    if let rawData = decryptedString.data(using: .utf8) {
+                        self.w2 = try JSONDecoder().decode(W2Data.self, from: rawData)
+                        loadAnswerForCurrentQuestion()
+                    }
+                } catch {
+                    print("Failed to decrypt saved document: \(error.localizedDescription)")
+                }
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -205,9 +168,8 @@ struct W2Form: View {
                 }
             }
         }
-        // NEW: Triggers the PDF Preview screen when we have a URL!
-        .navigationDestination(item: $generatedPDFUrl) { url in
-            PDFPreviewScreen(pdfURL: url)
+        .navigationDestination(item: $previewData) { data in
+            PDFPreviewScreen(pdfURL: data.url, documentId: data.documentId)
         }
         .sheet(isPresented: $showingW2Help) {
             W2FormHelpView(highlight: currentHighlight)
@@ -222,7 +184,6 @@ struct W2Form: View {
         }
     }
 
-    // MARK: - Intro Card
     private var introCard: some View {
         VStack(alignment: .leading, spacing: 18) {
             Image(systemName: "doc.text.magnifyingglass")
@@ -263,7 +224,6 @@ struct W2Form: View {
         }
     }
 
-    // MARK: - Progress Card
     private var progressCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -301,7 +261,6 @@ struct W2Form: View {
         .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
     }
 
-    // MARK: - Question Card
     private var questionCard: some View {
         let question = questions[currentQuestion]
 
@@ -434,7 +393,6 @@ struct W2Form: View {
         .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
     }
 
-    // MARK: - Question Navigation
     private var questionNavigationButtons: some View {
         HStack(spacing: 12) {
             if currentQuestion > 0 {
@@ -473,9 +431,9 @@ struct W2Form: View {
         }
     }
 
-    // MARK: - Logic Functions
     func goToPreviousQuestion() {
         saveCurrentAnswer()
+        saveInProgress()
         if currentQuestion > 0 {
             currentQuestion -= 1
             loadAnswerForCurrentQuestion()
@@ -485,6 +443,7 @@ struct W2Form: View {
     func goToNextQuestion() {
         guard validateCurrentAnswer() else { return }
         saveCurrentAnswer()
+        saveInProgress()
         if currentQuestion < questions.count - 1 {
             currentQuestion += 1
             loadAnswerForCurrentQuestion()
@@ -543,10 +502,34 @@ struct W2Form: View {
         default: return ""
         }
     }
+    
+    func saveInProgress() {
+        Task {
+            do {
+                let encoder = JSONEncoder()
+                let jsonData = try encoder.encode(w2)
+                let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
+                
+                let newId = try await DatabaseManager.shared.saveDocument(
+                    documentId: documentId,
+                    documentName: customDocumentName,
+                    formType: "Form W-2",
+                    status: .inProgress,
+                    pdfUrl: nil,
+                    rawData: jsonString
+                )
+                
+                await MainActor.run {
+                    self.documentId = newId
+                }
+            } catch {
+                print("Failed to save in progress: \(error.localizedDescription)")
+            }
+        }
+    }
 
-    // NEW: PDF Generator Function
-    func createW2PDF(from data: W2Data) throws -> URL {
-        let fileName = "W2Form"
+    func createW2PDF(from data: W2Data, docId: String) throws -> URL {
+        let fileName = "W2Form-\(docId)"
         
         return try UniversalPDFGenerator.generate(baseImageName: "W2Form", outputFileName: fileName) { imageRect in
             let address = [data.streetAddress, "\(data.city), \(data.state) \(data.zipCode)"]
@@ -564,7 +547,6 @@ struct W2Form: View {
         }
     }
 
-    // MARK: - Review Card
     private var reviewCard: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Review Your Answers")
@@ -581,14 +563,33 @@ struct W2Form: View {
             reviewRow(title: "ZIP Code", value: w2.zipCode, questionIndex: 5)
 
             Button {
-                // NEW: Trigger PDF Engine
-                do {
-                    generatedPDFUrl = try createW2PDF(from: w2)
-                } catch {
-                    print("Error generating W-2 PDF: \(error.localizedDescription)")
+                Task {
+                    do {
+                        let encoder = JSONEncoder()
+                        let jsonData = try encoder.encode(w2)
+                        let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
+                        
+                        let currentDocId = try await DatabaseManager.shared.saveDocument(
+                            documentId: documentId,
+                            documentName: customDocumentName,
+                            formType: "Form W-2",
+                            status: .inProgress,
+                            pdfUrl: nil,
+                            rawData: jsonString
+                        )
+                        
+                        let localUrl = try createW2PDF(from: w2, docId: currentDocId)
+                        
+                        await MainActor.run {
+                            self.documentId = currentDocId
+                            previewData = PDFPreviewData(url: localUrl, documentId: currentDocId)
+                        }
+                    } catch {
+                        print("Failed to prepare PDF: \(error.localizedDescription)")
+                    }
                 }
             } label: {
-                Text("Finish")
+                Text("Review PDF")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -602,6 +603,7 @@ struct W2Form: View {
                 showingIntro = true
                 showingReview = false
                 answer = ""
+                documentId = nil
                 w2 = W2Data()
             } label: {
                 Text("Start Over")
@@ -637,8 +639,6 @@ struct W2Form: View {
         .buttonStyle(.plain)
     }
 }
-
-// MARK: - Helper Views
 
 struct W2FormHelpView: View {
     let highlight: W2Highlight

@@ -32,4 +32,4 @@ cd TaxAssist
 # Open the project in Xcode
 open TaxAssist.xcodeproj
 
-# Add the Google Service plist environment variables
+# Add the Google-Service plist environment variables

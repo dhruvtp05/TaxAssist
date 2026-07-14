@@ -3,7 +3,6 @@
 //  TaxAssist
 //
 
-
 import SwiftUI
 import FirebaseAuth
 
@@ -32,21 +31,27 @@ enum TaxDocument: String, Identifiable {
     }
 }
 
+struct DocumentRoute: Hashable {
+    let form: TaxDocument
+    let documentName: String
+}
+
 // MARK: - Home Screen
 
 struct HomeScreen: View {
-    // Dynamic Firebase Data
-    @State private var userName: String = "User"
+    @Binding var selectedTab: Tab
     
-    // UI State
+    @State private var userName: String = "User"
     @State private var hasActiveDocument: Bool = false
     @State private var showFormSelector: Bool = false
     
-    // This tracks which form the user clicked in the popup
-    @State private var selectedDocument: TaxDocument?
+    @State private var activeRoute: DocumentRoute?
     
     // Controls presenting the Tax Dictionary screen
     @State private var showTaxDictionary: Bool = false
+    
+    // Controls programmatic navigation to FAQs
+    @State private var showFAQs: Bool = false
     
     // Placeholder data for when a document IS active
     let currentStep: Int = 2
@@ -66,12 +71,12 @@ struct HomeScreen: View {
                    iconColor: .green,
                    iconBackground: Color.green.opacity(0.12),
                    title: "My Documents",
-                   subtitle: "View your currently completed documents ready for submission"),
+                   subtitle: "View your completed and in-progress tax forms"),
         ActionItem(icon: "speaker.wave.2.fill",
                    iconColor: .purple,
                    iconBackground: Color.purple.opacity(0.12),
-                   title: "Accessibility Settings",
-                   subtitle: "Configure your preferences."),
+                   title: "Accessibility",
+                   subtitle: "Configure your preferences in settings."),
         ActionItem(icon: "lightbulb.fill",
                    iconColor: .orange,
                    iconBackground: Color.orange.opacity(0.15),
@@ -95,37 +100,35 @@ struct HomeScreen: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
-                .padding(.bottom, 32)
+                .padding(.bottom, 100)
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationBarHidden(true)
-            .safeAreaInset(edge: .bottom) {
-                BottomTabBar()
-            }
             .onAppear {
                 fetchUserData()
             }
             .sheet(isPresented: $showFormSelector) {
-                AvailableFormsSheet(selectedDocument: $selectedDocument)
+                AvailableFormsSheet(activeRoute: $activeRoute)
             }
             .sheet(isPresented: $showTaxDictionary) {
                 TaxDictionary()
             }
-            .navigationDestination(item: $selectedDocument) { document in
-                switch document {
+            .navigationDestination(item: $activeRoute) { route in
+                switch route.form {
                 case .w2:
-                    W2Form()
+                    W2Form(customDocumentName: route.documentName)
                         .toolbar(.hidden, for: .tabBar)
                 case .form1099:
-                    _099Form()
+                    _099Form(customDocumentName: route.documentName)
                         .toolbar(.hidden, for: .tabBar)
                 }
+            }
+            .navigationDestination(isPresented: $showFAQs) {
+                FAQs()
             }
         }
     }
 
-    // MARK: - Firebase Fetch
-    
     private func fetchUserData() {
         guard let user = Auth.auth().currentUser else { return }
         
@@ -135,8 +138,6 @@ struct HomeScreen: View {
             userName = email.components(separatedBy: "@").first ?? "User"
         }
     }
-
-    // MARK: Header
 
     private var header: some View {
         HStack {
@@ -160,8 +161,6 @@ struct HomeScreen: View {
         }
     }
 
-    // MARK: Greeting
-
     private var greeting: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Good morning, \(userName)!")
@@ -172,8 +171,6 @@ struct HomeScreen: View {
         }
     }
 
-    // MARK: Progress / Empty State Card
-    
     @ViewBuilder
     private var returnProgressCard: some View {
         if hasActiveDocument {
@@ -280,14 +277,13 @@ struct HomeScreen: View {
         }
     }
 
-    // MARK: Action Grid
-
     private var actionGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible())], spacing: 16) {
             ForEach(actions) { action in
                 ActionCard(item: action) {
                     handleActionTap(action)
                 }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -298,15 +294,10 @@ struct HomeScreen: View {
         switch action.title {
         case "Tax Dictionary":
             showTaxDictionary = true
-        case "My Documents":
-            // TODO: hook up MyDocumentsScreen
-            break
         case "FAQs":
-            // TODO: hook up FAQs
-            break
-        case "Accessibility Settings":
-            // TODO: hook up Accessibility Settings
-            break
+            showFAQs = true
+        case "My Documents":
+            selectedTab = .documents
         default:
             break
         }
@@ -317,10 +308,10 @@ struct HomeScreen: View {
 
 struct ActionCard: View {
     let item: ActionItem
-    var onTap: () -> Void = {}
+    let action: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        Button(action: action) {
             VStack(alignment: .leading, spacing: 14) {
                 ZStack {
                     Circle()
@@ -350,7 +341,6 @@ struct ActionCard: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // FIXED HEIGHT: This locks them all to the exact same size.
             .frame(height: 180, alignment: .top)
             .background(Color(uiColor: .systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 18))
@@ -359,45 +349,84 @@ struct ActionCard: View {
                     .stroke(Color(uiColor: .systemGray5), lineWidth: 1)
             )
         }
-        .buttonStyle(.plain)
     }
 }
 
-// MARK: - The Form Selector Popup Screen
+// MARK: - Available Forms Sheet
 
 struct AvailableFormsSheet: View {
     @Environment(\.dismiss) var dismiss
+    @Binding var activeRoute: DocumentRoute?
     
-    @Binding var selectedDocument: TaxDocument?
+    @State private var selectedForm: TaxDocument? = nil
+    @State private var documentName: String = ""
     
     let forms: [TaxDocument] = [.w2, .form1099]
     
     var body: some View {
         NavigationStack {
-            List(forms) { form in
-                Button(action: {
-                    selectedDocument = form
-                    dismiss()
-                }) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(form.rawValue)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        Text(form.subtitle)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
-            .navigationTitle("Select a Document")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Close") {
+            if let form = selectedForm {
+                VStack(spacing: 24) {
+                    Text("Name your document")
+                        .font(.title2.bold())
+                    
+                    TextField("e.g. Freelance Gig 2026", text: $documentName)
+                        .padding()
+                        .background(Color(uiColor: .systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    
+                    Button {
+                        let finalName = documentName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? form.rawValue : documentName
+                        activeRoute = DocumentRoute(form: form, documentName: finalName)
                         dismiss()
+                    } label: {
+                        Text("Start Filling")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .foregroundColor(.white)
+                            .background(Color.blue)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .fontWeight(.semibold)
+                    
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Document Name")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Back") {
+                            selectedForm = nil
+                            documentName = ""
+                        }
+                    }
+                }
+            } else {
+                List(forms) { form in
+                    Button(action: {
+                        selectedForm = form
+                    }) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(form.rawValue)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Text(form.subtitle)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+                .navigationTitle("Select a Document")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Close") {
+                            dismiss()
+                        }
+                        .fontWeight(.semibold)
+                    }
                 }
             }
         }
@@ -408,5 +437,5 @@ struct AvailableFormsSheet: View {
 // MARK: - Preview
 
 #Preview {
-    HomeScreen()
+    HomeScreen(selectedTab: .constant(.home))
 }

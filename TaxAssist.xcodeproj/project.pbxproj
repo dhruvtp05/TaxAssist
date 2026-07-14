@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		160734E83002A3C60070F23A /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 160734E73002A3C60070F23A /* FirebaseFirestore */; };
+		160734EA3002A3D20070F23A /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 160734E93002A3D20070F23A /* FirebaseStorage */; };
 		16DCD2A82FFD4DBF007BBEDB /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2A72FFD4DBF007BBEDB /* FirebaseCore */; };
 		16DCD2AA2FFD4DC9007BBEDB /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2A92FFD4DC9007BBEDB /* FirebaseAuth */; };
 		16DCD2ED2FFD62A8007BBEDB /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2EC2FFD62A8007BBEDB /* GoogleSignIn */; };
@@ -46,7 +48,9 @@
 				16DCD2A82FFD4DBF007BBEDB /* FirebaseCore in Frameworks */,
 				16DCD2AA2FFD4DC9007BBEDB /* FirebaseAuth in Frameworks */,
 				16DCD2ED2FFD62A8007BBEDB /* GoogleSignIn in Frameworks */,
+				160734E83002A3C60070F23A /* FirebaseFirestore in Frameworks */,
 				16DCD2EF2FFD62A8007BBEDB /* GoogleSignInSwift in Frameworks */,
+				160734EA3002A3D20070F23A /* FirebaseStorage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,6 +105,8 @@
 				16DCD2A92FFD4DC9007BBEDB /* FirebaseAuth */,
 				16DCD2EC2FFD62A8007BBEDB /* GoogleSignIn */,
 				16DCD2EE2FFD62A8007BBEDB /* GoogleSignInSwift */,
+				160734E73002A3C60070F23A /* FirebaseFirestore */,
+				160734E93002A3D20070F23A /* FirebaseStorage */,
 			);
 			productName = TaxAssist;
 			productReference = 16EF83812FF56829005CE568 /* TaxAssist.app */;
@@ -291,6 +297,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TaxAssist/Info.plist;
@@ -299,6 +306,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -323,6 +331,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TaxAssist/Info.plist;
@@ -331,6 +340,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -391,6 +401,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		160734E73002A3C60070F23A /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 16DCD2A52FFD47F8007BBEDB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		160734E93002A3D20070F23A /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 16DCD2A52FFD47F8007BBEDB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		16DCD2A72FFD4DBF007BBEDB /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 16DCD2A52FFD47F8007BBEDB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
