@@ -26,7 +26,7 @@ struct TaxAssistApp: App {
                 }
             }
             .onAppear {
-                Auth.auth().addStateDidChangeListener { auth, user in
+                _ = Auth.auth().addStateDidChangeListener { auth, user in
                     if user != nil {
                         isLoggedIn = true
                     } else {

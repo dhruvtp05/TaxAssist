@@ -34,10 +34,27 @@ struct PDFKitView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> PDFView {
         let pdfView = PDFView()
+
         pdfView.document = PDFDocument(url: url)
-        pdfView.autoScales = true 
+
+        // Do not automatically fit the PDF to the screen
+        pdfView.autoScales = false
+
+        // Show the PDF at its natural scale
+        pdfView.scaleFactor = 1.0
+
+        // Allow zooming
+        pdfView.minScaleFactor = 0.5
+        pdfView.maxScaleFactor = 5.0
+
+        // One continuous document
         pdfView.displayMode = .singlePageContinuous
+
+        // Allow movement in both directions
+        pdfView.displayDirection = .vertical
+
         pdfView.backgroundColor = .systemGroupedBackground
+
         return pdfView
     }
 
