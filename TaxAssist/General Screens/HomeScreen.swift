@@ -20,6 +20,7 @@ struct ActionItem: Identifiable {
 enum TaxDocument: String, Identifiable {
     case w2 = "Form W-2"
     case form1099 = "Form 1099-NEC"
+    case w4 = "Form W-4"
     
     var id: String { self.rawValue }
     
@@ -27,6 +28,7 @@ enum TaxDocument: String, Identifiable {
         switch self {
         case .w2: return "Wage and Tax Statement"
         case .form1099: return "Nonemployee Compensation"
+        case .w4: return "Employee's Withholding Certificate"
         }
     }
 }
@@ -120,6 +122,9 @@ struct HomeScreen: View {
                         .toolbar(.hidden, for: .tabBar)
                 case .form1099:
                     _099Form(customDocumentName: route.documentName)
+                        .toolbar(.hidden, for: .tabBar)
+                case .w4:
+                    W4Form(customDocumentName: route.documentName)
                         .toolbar(.hidden, for: .tabBar)
                 }
             }
@@ -361,7 +366,7 @@ struct AvailableFormsSheet: View {
     @State private var selectedForm: TaxDocument? = nil
     @State private var documentName: String = ""
     
-    let forms: [TaxDocument] = [.w2, .form1099]
+    let forms: [TaxDocument] = [.w2, .form1099, .w4]
     
     var body: some View {
         NavigationStack {

@@ -112,6 +112,8 @@ struct W4Question: Identifiable {
 
 struct W4Form: View {
 
+    var customDocumentName: String = "Form W-4"
+
     @State private var currentQuestion = 0
     @State private var showingIntro = true
     @State private var showingReview = false
@@ -853,7 +855,7 @@ struct W4Form: View {
     private func createW4PDF(from data: W4Data) throws -> URL {
         return try UniversalPDFGenerator.generate(
             baseImageName: "W4Form",
-            outputFileName: "W4Form"
+            outputFileName: customDocumentName
         ) { imageRect in
 
             let pageWidth: CGFloat = 611.976
