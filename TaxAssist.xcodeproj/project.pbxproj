@@ -13,16 +13,19 @@
 		16DCD2AA2FFD4DC9007BBEDB /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2A92FFD4DC9007BBEDB /* FirebaseAuth */; };
 		16DCD2ED2FFD62A8007BBEDB /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2EC2FFD62A8007BBEDB /* GoogleSignIn */; };
 		16DCD2EF2FFD62A8007BBEDB /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2EE2FFD62A8007BBEDB /* GoogleSignInSwift */; };
+		16FB5BF030068E57007B557E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 16FB5BEF30068E57007B557E /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		16EF83812FF56829005CE568 /* TaxAssist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaxAssist.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		16FB5BEF30068E57007B557E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		16DCD2F12FFD63A0007BBEDB /* Exceptions for "TaxAssist" folder in "TaxAssist" target */ = {
+		16FB5BEA30068B2C007B557E /* Exceptions for "TaxAssist" folder in "TaxAssist" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"GoogleService-Info.plist",
 				Info.plist,
 			);
 			target = 16EF83802FF56829005CE568 /* TaxAssist */;
@@ -33,7 +36,7 @@
 		16EF83832FF56829005CE568 /* TaxAssist */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				16DCD2F12FFD63A0007BBEDB /* Exceptions for "TaxAssist" folder in "TaxAssist" target */,
+				16FB5BEA30068B2C007B557E /* Exceptions for "TaxAssist" folder in "TaxAssist" target */,
 			);
 			path = TaxAssist;
 			sourceTree = "<group>";
@@ -67,6 +70,7 @@
 		16EF83782FF56829005CE568 = {
 			isa = PBXGroup;
 			children = (
+				16FB5BEF30068E57007B557E /* GoogleService-Info.plist */,
 				16EF83832FF56829005CE568 /* TaxAssist */,
 				16DCD2A62FFD4DBF007BBEDB /* Frameworks */,
 				16EF83822FF56829005CE568 /* Products */,
@@ -155,6 +159,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				16FB5BF030068E57007B557E /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
