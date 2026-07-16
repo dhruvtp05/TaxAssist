@@ -17,8 +17,7 @@ struct MainAppView: View {
                 case .documents:
                     MyDocumentsScreen()
                 case .chat:
-                    Text("Chat Bot Coming Soon") // Placeholder
-                        .font(.title).foregroundColor(.secondary)
+                    TaxQAScreen()
                 case .settings:
                     Text("Settings Coming Soon") // Placeholder
                         .font(.title).foregroundColor(.secondary)
