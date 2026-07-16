@@ -20,7 +20,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		16DCD2F12FFD63A0007BBEDB /* Exceptions for "TaxAssist" folder in "TaxAssist" target */ = {
+		16B087F230068D6E00ADFEEE /* Exceptions for "TaxAssist" folder in "TaxAssist" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -33,7 +33,7 @@
 		16EF83832FF56829005CE568 /* TaxAssist */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				16DCD2F12FFD63A0007BBEDB /* Exceptions for "TaxAssist" folder in "TaxAssist" target */,
+				16B087F230068D6E00ADFEEE /* Exceptions for "TaxAssist" folder in "TaxAssist" target */,
 			);
 			path = TaxAssist;
 			sourceTree = "<group>";
