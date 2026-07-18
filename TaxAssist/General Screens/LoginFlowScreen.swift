@@ -4,6 +4,10 @@ import FirebaseCore
 import FirebaseAuth
 import GoogleSignIn
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 struct LoginFlowScreen: View {
     @State private var email: String = ""
     @State private var password: String = ""
@@ -16,6 +20,54 @@ struct LoginFlowScreen: View {
     @State private var rememberMe: Bool = false
     
     @State private var errorMessage: String = ""
+    
+    @AppStorage("customBackgroundPreset") private var customBackgroundPreset: String = "white"
+    @AppStorage("customTextHue") private var customTextHue: Double = 0.58
+    @AppStorage("accessibilityLargerText") private var accessibilityLargerText: Bool = false
+    @AppStorage("accessibilityBoldText") private var accessibilityBoldText: Bool = false
+    @AppStorage("accessibilityReduceMotion") private var accessibilityReduceMotion: Bool = false
+    @AppStorage("accessibilityNumericKeypad") private var accessibilityNumericKeypad: Bool = true
+    
+    private var customBackgroundColor: Color {
+        switch customBackgroundPreset {
+        case "blue": return Color.blue.opacity(0.15)
+        case "black": return Color.black.opacity(0.9)
+        case "sky": return Color(red: 0.75, green: 0.88, blue: 1.0)
+        default: return .white
+        }
+    }
+    private var contrastingForegroundColor: Color {
+        #if canImport(UIKit)
+        let ui = UIColor(customBackgroundColor)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        if ui.getRed(&r, green: &g, blue: &b, alpha: &a) {
+            let luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            return luminance < 0.5 ? .white : .black
+        } else {
+            var white: CGFloat = 0
+            ui.getWhite(&white, alpha: nil)
+            return white < 0.5 ? .white : .black
+        }
+        #else
+        return .primary
+        #endif
+    }
+    private var customTextColor: Color {
+        #if canImport(UIKit)
+        let base = Color(hue: customTextHue, saturation: 0.85, brightness: 0.9)
+        let fg = UIColor(contrastingForegroundColor)
+        let bs = UIColor(base)
+        var fr: CGFloat = 0, fgG: CGFloat = 0, fb: CGFloat = 0, fa: CGFloat = 0
+        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        bs.getRed(&br, green: &bg, blue: &bb, alpha: &ba)
+        fg.getRed(&fr, green: &fgG, blue: &fb, alpha: &fa)
+        let mix: (CGFloat, CGFloat) -> CGFloat = { (u, c) in min(max(u * 0.75 + c * 0.25, 0), 1) }
+        let rr = mix(br, fr), gg = mix(bg, fgG), bb2 = mix(bb, fb)
+        return Color(red: rr, green: gg, blue: bb2)
+        #else
+        return Color(hue: customTextHue, saturation: 0.85, brightness: 0.9)
+        #endif
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -42,17 +94,23 @@ struct LoginFlowScreen: View {
             
             if !showPasswordStep {
                 emailEntryView
-                    .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .leading)))
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading),
+                        removal: .move(edge: .leading))
+                    )
             } else {
                 passwordEntryView
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .trailing)))
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .trailing))
+                    )
             }
             
             Spacer()
         }
         .padding(.horizontal, 24)
-        .background(Color(UIColor.systemGray6).opacity(0.3).ignoresSafeArea())
-        .animation(.easeInOut(duration: 0.3), value: showPasswordStep)
+        .background(customBackgroundColor.ignoresSafeArea())
+        .animation(accessibilityReduceMotion ? nil : .easeInOut(duration: 0.3), value: showPasswordStep)
         .sheet(isPresented: $showTermsOfService) {
             TermsOfServiceScreen()
         }
@@ -92,7 +150,7 @@ struct LoginFlowScreen: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(Color.black)
+                    .background(customTextColor)
                     .cornerRadius(10)
             }
             .opacity(email.isEmpty ? 0.6 : 1.0)
@@ -197,7 +255,7 @@ struct LoginFlowScreen: View {
                     
                     Button(action: { showTermsOfService = true }) {
                         Text("Terms of Service")
-                            .foregroundColor(.black)
+                            .foregroundColor(customTextColor)
                             .underline()
                     }
                 }
@@ -208,7 +266,7 @@ struct LoginFlowScreen: View {
                     
                     Button(action: { showPrivacyPolicy = true }) {
                         Text("Privacy Policy")
-                            .foregroundColor(.black)
+                            .foregroundColor(customTextColor)
                             .underline()
                     }
                 }
@@ -234,7 +292,7 @@ struct LoginFlowScreen: View {
                     errorMessage = ""
                 }) {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(.black)
+                        .foregroundColor(customTextColor)
                         .font(.system(size: 18, weight: .semibold))
                 }
                 Spacer()
@@ -317,31 +375,31 @@ struct LoginFlowScreen: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(Color.black)
+                    .background(customTextColor)
                     .cornerRadius(10)
             }
             .opacity(password.isEmpty ? 0.6 : 1.0)
             .disabled(password.isEmpty)
             
             Button("Forgot password?") {
-                            errorMessage = ""
-                            
-                            guard !email.isEmpty else {
-                                errorMessage = "Please enter your email to reset your password."
-                                return
-                            }
-                            
-                            Auth.auth().sendPasswordReset(withEmail: email) { error in
-                                if let error = error {
-                                    errorMessage = error.localizedDescription
-                                } else {
-                                    errorMessage = "✅ Password reset email sent! Check your inbox."
-                                }
-                            }
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
-                        .padding(.top, 4)
+                errorMessage = ""
+                
+                guard !email.isEmpty else {
+                    errorMessage = "Please enter your email to reset your password."
+                    return
+                }
+                
+                Auth.auth().sendPasswordReset(withEmail: email) { error in
+                    if let error = error {
+                        errorMessage = error.localizedDescription
+                    } else {
+                        errorMessage = "✅ Password reset email sent! Check your inbox."
+                    }
+                }
+            }
+            .font(.subheadline)
+            .foregroundColor(customTextColor)
+            .padding(.top, 4)
         }
     }
 }

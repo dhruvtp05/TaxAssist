@@ -5,6 +5,7 @@
 
 import SwiftUI
 import FirebaseAuth
+import Combine
 
 // MARK: - Models
 
@@ -55,9 +56,16 @@ struct HomeScreen: View {
     // Controls programmatic navigation to FAQs
     @State private var showFAQs: Bool = false
     
+    @State private var showAccessibilitySettings = false
+    
     // Placeholder data for when a document IS active
     let currentStep: Int = 2
     let totalSteps: Int = 10
+
+    @AppStorage("customBackgroundPreset") private var customBackgroundPreset: String = "white"
+    @AppStorage("customTextHue") private var customTextHue: Double = 0.58
+    @AppStorage("accessibilityConciseLabels") private var accessibilityConciseLabels: Bool = true
+    @AppStorage("accessibilityQuickSectionNavigation") private var accessibilityQuickSectionNavigation: Bool = true
 
     private var progress: Double {
         Double(currentStep) / Double(totalSteps)
@@ -86,6 +94,49 @@ struct HomeScreen: View {
                    subtitle: "Get simple explanations for confusing tax terms.")
     ]
 
+    private var customBackgroundColor: Color {
+        switch customBackgroundPreset {
+        case "blue": return Color.blue.opacity(0.15)
+        case "black": return Color.black.opacity(0.9)
+        case "sky": return Color(red: 0.75, green: 0.88, blue: 1.0)
+        default: return Color.white
+        }
+    }
+
+    private var contrastingForegroundColor: Color {
+        #if canImport(UIKit)
+        let ui = UIColor(customBackgroundColor)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        if ui.getRed(&r, green: &g, blue: &b, alpha: &a) {
+            let luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            return luminance < 0.5 ? .white : .black
+        } else {
+            var white: CGFloat = 0
+            ui.getWhite(&white, alpha: nil)
+            return white < 0.5 ? .white : .black
+        }
+        #else
+        return .primary
+        #endif
+    }
+
+    private var customTextColor: Color {
+        #if canImport(UIKit)
+        let base = Color(hue: customTextHue, saturation: 0.85, brightness: 0.9)
+        let fg = UIColor(contrastingForegroundColor)
+        let bs = UIColor(base)
+        var fr: CGFloat = 0, fgG: CGFloat = 0, fb: CGFloat = 0, fa: CGFloat = 0
+        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        bs.getRed(&br, green: &bg, blue: &bb, alpha: &ba)
+        fg.getRed(&fr, green: &fgG, blue: &fb, alpha: &fa)
+        let mix: (CGFloat, CGFloat) -> CGFloat = { (u, c) in min(max(u * 0.75 + c * 0.25, 0), 1) }
+        let rr = mix(br, fr), gg = mix(bg, fgG), bb2 = mix(bb, fb)
+        return Color(red: rr, green: gg, blue: bb2)
+        #else
+        return Color(hue: customTextHue, saturation: 0.85, brightness: 0.9)
+        #endif
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -96,7 +147,7 @@ struct HomeScreen: View {
                     
                     Text("What would you like to do?")
                         .font(.title2.bold())
-                        .foregroundColor(.primary)
+                        .foregroundColor(customTextColor)
 
                     actionGrid
                 }
@@ -104,7 +155,7 @@ struct HomeScreen: View {
                 .padding(.top, 12)
                 .padding(.bottom, 100)
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(customBackgroundColor.ignoresSafeArea())
             .navigationBarHidden(true)
             .onAppear {
                 fetchUserData()
@@ -114,6 +165,9 @@ struct HomeScreen: View {
             }
             .sheet(isPresented: $showTaxDictionary) {
                 TaxDictionary()
+            }
+            .sheet(isPresented: $showAccessibilitySettings) {
+                AccessibilitySettingsView()
             }
             .navigationDestination(item: $activeRoute) { route in
                 switch route.form {
@@ -149,20 +203,20 @@ struct HomeScreen: View {
             HStack(spacing: 8) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.blue, lineWidth: 2.5)
+                        .stroke(customTextColor, lineWidth: 2.5)
                         .frame(width: 40, height: 40)
                     Image(systemName: "checkmark")
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.blue)
+                        .foregroundColor(customTextColor)
                 }
 
-                Text("\(Text("Tax").foregroundColor(.primary))\(Text("Assist").foregroundColor(.blue))")
+                Text("\(Text("Tax").foregroundColor(.primary))\(Text("Assist").foregroundColor(customTextColor))")
                     .font(.title.bold())
             }
             Spacer()
             Image(systemName: "person.circle")
                 .font(.system(size: 30))
-                .foregroundColor(.blue)
+                .foregroundColor(customTextColor)
         }
     }
 
@@ -212,14 +266,14 @@ struct HomeScreen: View {
                                 .fill(Color(uiColor: .systemGray5))
                                 .frame(height: 8)
                             Capsule()
-                                .fill(Color.blue)
+                                .fill(customTextColor)
                                 .frame(width: geo.size.width * progress, height: 8)
                         }
                     }
                     .frame(height: 8)
                     Text("\(Int(progress * 100))%")
                         .font(.subheadline.bold())
-                        .foregroundColor(.blue)
+                        .foregroundColor(customTextColor)
                 }
 
                 Button(action: {}) {
@@ -233,7 +287,7 @@ struct HomeScreen: View {
                     .foregroundColor(.white)
                     .padding(.vertical, 16)
                     .padding(.horizontal, 20)
-                    .background(Color.blue)
+                    .background(customTextColor)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
             }
@@ -271,7 +325,7 @@ struct HomeScreen: View {
                     .foregroundColor(.white)
                     .padding(.vertical, 16)
                     .padding(.horizontal, 20)
-                    .background(Color.blue)
+                    .background(customTextColor)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
             }
@@ -285,9 +339,9 @@ struct HomeScreen: View {
     private var actionGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible())], spacing: 16) {
             ForEach(actions) { action in
-                ActionCard(item: action) {
+                ActionCard(item: action, action: {
                     handleActionTap(action)
-                }
+                }, accent: customTextColor)
                 .buttonStyle(.plain)
             }
         }
@@ -303,6 +357,8 @@ struct HomeScreen: View {
             showFAQs = true
         case "My Documents":
             selectedTab = .documents
+        case "Accessibility":
+            showAccessibilitySettings = true
         default:
             break
         }
@@ -314,6 +370,7 @@ struct HomeScreen: View {
 struct ActionCard: View {
     let item: ActionItem
     let action: () -> Void
+    var accent: Color = .primary
 
     var body: some View {
         Button(action: action) {
@@ -329,7 +386,7 @@ struct ActionCard: View {
 
                 Text(item.title)
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(accent)
                     .multilineTextAlignment(.leading)
 
                 HStack(alignment: .bottom) {
@@ -341,7 +398,7 @@ struct ActionCard: View {
                     Spacer()
                     Image(systemName: "arrow.right")
                         .font(.caption.bold())
-                        .foregroundColor(.secondary)
+                        .foregroundColor(accent)
                 }
             }
             .padding(16)

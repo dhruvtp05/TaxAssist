@@ -97,18 +97,25 @@ struct GeneralSettingsView: View {
                         Image(systemName: "person.circle")
                         Text("Profile")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 ) {
-                    TextField("Full name", text: $userFullName)
-                        .textContentType(.name)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.words)
+                    HStack(spacing: 10) {
+                        Image(systemName: "person").foregroundStyle(customTextColor)
+                        TextField("Full name", text: $userFullName)
+                            .textContentType(.name)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.words)
+                    }
                     
-                    TextField("Email", text: $userEmail)
-                        .keyboardType(.emailAddress)
-                        .textContentType(.emailAddress)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
+                    HStack(spacing: 10) {
+                        Image(systemName: "envelope").foregroundStyle(customTextColor)
+                        TextField("Email", text: $userEmail)
+                            .keyboardType(.emailAddress)
+                            .textContentType(.emailAddress)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                    }
                     
                     if let emailError {
                         Text(emailError)
@@ -116,6 +123,7 @@ struct GeneralSettingsView: View {
                             .foregroundStyle(.red)
                     }
                 }
+                .textCase(nil)
                 .onChange(of: userEmail) { newValue in
                     let pattern = #"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$"#
                     let isValid = newValue.uppercased().range(of: pattern, options: .regularExpression) != nil
@@ -127,27 +135,40 @@ struct GeneralSettingsView: View {
                         Image(systemName: "gearshape")
                         Text("Preferences")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor),
                         footer: Text("Currency affects reports and input defaults. Tax year sets the default context for new entries.")
                 ) {
-                    Picker("Currency", selection: $preferredCurrency) {
+                    Picker(selection: $preferredCurrency) {
                         ForEach(supportedCurrencies, id: \.self) { code in
                             Text(code).tag(code)
                         }
+                    } label: {
+                        HStack {
+                            Image(systemName: "dollarsign.circle").foregroundStyle(customTextColor)
+                            Text("Currency")
+                        }
                     }
                     
-                    Picker("Default tax year", selection: $defaultTaxYear) {
+                    Picker(selection: $defaultTaxYear) {
                         ForEach(supportedTaxYears, id: \.self) { year in
                             Text(String(year)).tag(year)
                         }
+                    } label: {
+                        HStack {
+                            Image(systemName: "calendar").foregroundStyle(customTextColor)
+                            Text("Default tax year")
+                        }
                     }
                 }
+                .textCase(nil)
                 
                 Section(header:
                     HStack(spacing: 8) {
                         Image(systemName: "paintpalette")
                         Text("Appearance")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 ) {
                     Picker("Background", selection: $customBackgroundPreset) {
@@ -173,41 +194,72 @@ struct GeneralSettingsView: View {
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("Text hue")
+                    
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(customBackgroundColor)
+                        .overlay(
+                            HStack(spacing: 12) {
+                                Circle().fill(customTextColor).frame(width: 12, height: 12)
+                                Text("Preview text")
+                                    .foregroundStyle(customTextColor)
+                                    .font(.subheadline)
+                                Spacer()
+                            }
+                            .padding(12)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12).stroke(customTextColor.opacity(0.15), lineWidth: 1)
+                        )
+                        .frame(height: 56)
+                        .listRowBackground(customBackgroundColor)
                 }
+                .textCase(nil)
                 
                 Section(header:
                     HStack(spacing: 8) {
                         Image(systemName: "bell.badge")
                         Text("Notifications")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor),
                         footer: Text("Reminders are sent on the selected day each month when notifications are enabled.")
                 ) {
                     Toggle(isOn: $notificationsEnabled) {
-                        Text("Enable notifications")
+                        Text("Enable notifications").foregroundStyle(customTextColor)
                     }
                     
                     if notificationsEnabled {
-                        Picker("Reminder day", selection: $reminderDayOfMonth) {
+                        Picker(selection: $reminderDayOfMonth) {
                             ForEach(1..<29) { day in
                                 Text("Day \(day)").tag(day)
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "calendar.badge.clock").foregroundStyle(customTextColor)
+                                Text("Reminder day")
                             }
                         }
                         .accessibilityHint("Choose a day of the month to receive a reminder")
                     }
                 }
+                .textCase(nil)
                 
                 Section(header:
                     HStack(spacing: 8) {
                         Image(systemName: "lock.shield")
                         Text("Data & Privacy")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor),
                         footer: Text("We value your privacy. Analytics are anonymous and help us improve TaxAssist.")
                 ) {
-                    Toggle("Require Face ID / Touch ID", isOn: $biometricLockEnabled)
+                    Toggle(isOn: $biometricLockEnabled) {
+                        Text("Require Face ID / Touch ID").foregroundStyle(customTextColor)
+                    }
                     
-                    Toggle("Share anonymous analytics", isOn: $shareAnalytics)
+                    Toggle(isOn: $shareAnalytics) {
+                        Text("Share anonymous analytics").foregroundStyle(customTextColor)
+                    }
                     
                     Button {
                         exportData()
@@ -248,50 +300,61 @@ struct GeneralSettingsView: View {
                         Text("This will restore all settings to their defaults. This action cannot be undone.")
                     }
                 }
+                .textCase(nil)
                 
                 Section(header:
                     HStack(spacing: 8) {
                         Image(systemName: "questionmark.circle")
                         Text("Support")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 ) {
                     Button {
                         rateApp()
                     } label: {
                         Label("Rate TaxAssist", systemImage: "star.circle")
+                            .foregroundStyle(customTextColor)
                     }
                     
                     Button {
                         contactSupport()
                     } label: {
                         Label("Contact support", systemImage: "envelope")
+                            .foregroundStyle(customTextColor)
                     }
                 }
+                .textCase(nil)
                 
                 Section(header:
                     HStack(spacing: 8) {
                         Image(systemName: "doc.text")
                         Text("Legal")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 ) {
                     NavigationLink(destination: PrivacyPolicyScreen()) {
                         Label("Privacy Policy", systemImage: "hand.raised")
+                            .foregroundStyle(customTextColor)
                     }
                     NavigationLink(destination: TermsOfServiceScreen()) {
                         Label("Terms of Service", systemImage: "doc.plaintext")
+                            .foregroundStyle(customTextColor)
                     }
                 }
+                .textCase(nil)
                 
                 Section {
                     HStack {
                         Label("Version", systemImage: "info.circle")
+                            .foregroundStyle(customTextColor)
                         Spacer()
                         Text(appVersionString)
                             .foregroundStyle(.secondary)
                     }
                 }
+                .textCase(nil)
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)

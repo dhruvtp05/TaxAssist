@@ -24,11 +24,17 @@ struct AccessibilitySettingsView: View {
     @AppStorage("accessibilityHighContrastCharts") private var accessibilityHighContrastCharts: Bool = false
     @AppStorage("accessibilityCurrencySpacing") private var accessibilityCurrencySpacing: Bool = true
     @AppStorage("accessibilityReadNumbersAsDigits") private var accessibilityReadNumbersAsDigits: Bool = false
+
+    @AppStorage("accessibilitySwipeToDelete") private var accessibilitySwipeToDelete: Bool = true
+    @AppStorage("accessibilityQuickSectionNavigation") private var accessibilityQuickSectionNavigation: Bool = true
+    @AppStorage("accessibilityConciseLabels") private var accessibilityConciseLabels: Bool = true
+    @AppStorage("accessibilityConfirmDestructive") private var accessibilityConfirmDestructive: Bool = true
     
     @AppStorage("customBackgroundPreset") private var customBackgroundPreset: String = "white"
     @AppStorage("customTextHue") private var customTextHue: Double = 0.58
 
     @State private var motionAnimationActive = false
+    @State private var showingDestructiveExample = false
     
     private var customBackgroundColor: Color {
         switch customBackgroundPreset {
@@ -89,23 +95,25 @@ struct AccessibilitySettingsView: View {
         NavigationStack {
             List {
                 Section {
-                    Toggle("Larger text", isOn: $accessibilityLargerText)
-                        .accessibilityIdentifier("largerTextToggle")
-                        .fontWeight(accessibilityBoldText ? .bold : .regular)
-                        .tint(customTextColor)
-                        .dynamicTypeSize(accessibilityLargerText ? .accessibility3 : .large)
-                        .listRowBackground(customBackgroundColor)
-                        .accessibilityHint("Increases the base text size in supported areas of the app.")
+                    Toggle(isOn: $accessibilityLargerText) {
+                        Text("Larger text").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("largerTextToggle")
+                    .fontWeight(accessibilityBoldText ? .bold : .regular)
+                    .listRowBackground(customBackgroundColor)
+                    .accessibilityHint("Increases the base text size in supported areas of the app.")
                     
-                    Toggle("Bold text", isOn: $accessibilityBoldText)
-                        .accessibilityIdentifier("boldTextToggle")
-                        .tint(customTextColor)
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityBoldText) {
+                        Text("Bold text").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("boldTextToggle")
+                    .listRowBackground(customBackgroundColor)
                     
-                    Toggle("High contrast", isOn: $accessibilityHighContrast)
-                        .accessibilityIdentifier("highContrastToggle")
-                        .tint(customTextColor)
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityHighContrast) {
+                        Text("High contrast").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("highContrastToggle")
+                    .listRowBackground(customBackgroundColor)
                     
                     VStack(spacing: 6) {
                         Text("Preview")
@@ -132,15 +140,18 @@ struct AccessibilitySettingsView: View {
                         Image(systemName: "figure.accessibility")
                         Text("Vision & Display")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 }
+                .textCase(nil)
                 
                 Section {
-                    Toggle("Reduce motion", isOn: $accessibilityReduceMotion)
-                        .accessibilityIdentifier("reduceMotionToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Limits animations and parallax effects to reduce motion.")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityReduceMotion) {
+                        Text("Reduce motion").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("reduceMotionToggle")
+                    .accessibilityHint("Limits animations and parallax effects to reduce motion.")
+                    .listRowBackground(customBackgroundColor)
                     
                     HStack {
                         Spacer()
@@ -166,36 +177,43 @@ struct AccessibilitySettingsView: View {
                         Image(systemName: "figure.walk")
                         Text("Motion")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 }
+                .textCase(nil)
                 
                 Section {
-                    Toggle("Button shapes", isOn: $accessibilityButtonShapes)
-                        .accessibilityIdentifier("buttonShapesToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Adds outlines or backgrounds to tappable elements for clarity.")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityButtonShapes) {
+                        Text("Button shapes").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("buttonShapesToggle")
+                    .accessibilityHint("Adds outlines or backgrounds to tappable elements for clarity.")
+                    .listRowBackground(customBackgroundColor)
                     
-                    Toggle("VoiceOver hints", isOn: $accessibilityVoiceOverHints)
-                        .accessibilityIdentifier("voiceOverHintsToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Includes additional guidance for screen reader users.")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityVoiceOverHints) {
+                        Text("VoiceOver hints").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("voiceOverHintsToggle")
+                    .accessibilityHint("Includes additional guidance for screen reader users.")
+                    .listRowBackground(customBackgroundColor)
                     
                 } header: {
                     HStack {
                         Image(systemName: "rectangle.and.hand.point.up.left")
                         Text("Controls")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 }
+                .textCase(nil)
                 
                 Section {
-                    Toggle("Prefer numeric keypad", isOn: $accessibilityNumericKeypad)
-                        .accessibilityIdentifier("numericKeypadToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Shows a numeric keypad for amounts and percentages where possible.")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityNumericKeypad) {
+                        Text("Prefer numeric keypad").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("numericKeypadToggle")
+                    .accessibilityHint("Shows a numeric keypad for amounts and percentages where possible.")
+                    .listRowBackground(customBackgroundColor)
                     VStack(spacing: 8) {
                         Text("Shows a numeric keypad for amounts and percentages where possible.")
                             .font(.footnote)
@@ -213,21 +231,23 @@ struct AccessibilitySettingsView: View {
                     }
                     .listRowBackground(customBackgroundColor)
                     
-                    Toggle("Simplified forms", isOn: $accessibilitySimplifiedForms)
-                        .accessibilityIdentifier("simplifiedFormsToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Reduces optional fields and groups inputs to streamline entry.")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilitySimplifiedForms) {
+                        Text("Simplified forms").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("simplifiedFormsToggle")
+                    .accessibilityHint("Reduces optional fields and groups inputs to streamline entry.")
+                    .listRowBackground(customBackgroundColor)
                     Text("Reduces optional fields and groups inputs to streamline entry.")
                         .font(.footnote)
                         .foregroundColor(customTextColor.opacity(0.7))
                         .listRowBackground(customBackgroundColor)
                     
-                    Toggle("Currency symbol spacing", isOn: $accessibilityCurrencySpacing)
-                        .accessibilityIdentifier("currencySpacingToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Adds a thin space between the currency symbol and amount for readability (e.g., $ 1,234.56).")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityCurrencySpacing) {
+                        Text("Currency symbol spacing").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("currencySpacingToggle")
+                    .accessibilityHint("Adds a thin space between the currency symbol and amount for readability (e.g., $ 1,234.56).")
+                    .listRowBackground(customBackgroundColor)
                     Text("Adds a thin space between the currency symbol and amount for readability (e.g., $ 1,234.56).")
                         .font(.footnote)
                         .foregroundColor(customTextColor.opacity(0.7))
@@ -237,15 +257,18 @@ struct AccessibilitySettingsView: View {
                         Image(systemName: "creditcard")
                         Text("Data Entry")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 }
+                .textCase(nil)
                 
                 Section {
-                    Toggle("Row separators in reports", isOn: $accessibilityReportSeparators)
-                        .accessibilityIdentifier("reportSeparatorsToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Adds visible separators between rows in tables and reports.")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityReportSeparators) {
+                        Text("Row separators in reports").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("reportSeparatorsToggle")
+                    .accessibilityHint("Adds visible separators between rows in tables and reports.")
+                    .listRowBackground(customBackgroundColor)
                     
                     if accessibilityReportSeparators {
                         VStack(spacing: 0) {
@@ -283,11 +306,12 @@ struct AccessibilitySettingsView: View {
                         .listRowBackground(customBackgroundColor)
                     }
                     
-                    Toggle("High-contrast charts", isOn: $accessibilityHighContrastCharts)
-                        .accessibilityIdentifier("highContrastChartsToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Uses stronger colors and outlines for chart elements.")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityHighContrastCharts) {
+                        Text("High-contrast charts").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("highContrastChartsToggle")
+                    .accessibilityHint("Uses stronger colors and outlines for chart elements.")
+                    .listRowBackground(customBackgroundColor)
                     
                     if accessibilityHighContrastCharts {
                         HStack(spacing: 16) {
@@ -318,11 +342,12 @@ struct AccessibilitySettingsView: View {
                         .listRowBackground(customBackgroundColor)
                     }
                     
-                    Toggle("Read numbers as digits", isOn: $accessibilityReadNumbersAsDigits)
-                        .accessibilityIdentifier("readNumbersDigitsToggle")
-                        .tint(customTextColor)
-                        .accessibilityHint("Screen readers will read numbers digit by digit (e.g., one-two-three) where supported.")
-                        .listRowBackground(customBackgroundColor)
+                    Toggle(isOn: $accessibilityReadNumbersAsDigits) {
+                        Text("Read numbers as digits").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("readNumbersDigitsToggle")
+                    .accessibilityHint("Screen readers will read numbers digit by digit (e.g., one-two-three) where supported.")
+                    .listRowBackground(customBackgroundColor)
                     
                     Text("Screen readers will read numbers digit by digit (e.g., one-two-three) where supported.")
                         .font(.footnote)
@@ -333,8 +358,101 @@ struct AccessibilitySettingsView: View {
                         Image(systemName: "doc.text.magnifyingglass")
                         Text("Reports & Reading")
                     }
+                    .font(.subheadline).bold()
                     .foregroundStyle(customTextColor)
                 }
+                .textCase(nil)
+                
+                Section {
+                    Toggle(isOn: $accessibilitySwipeToDelete) {
+                        Text("Swipe to delete").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("swipeToDeleteToggle")
+                    .listRowBackground(customBackgroundColor)
+                    Text("Allows removing items with a swipe gesture in lists (e.g., deleting a dependent).")
+                        .font(.footnote)
+                        .foregroundColor(customTextColor.opacity(0.7))
+                        .listRowBackground(customBackgroundColor)
+                    
+                    Toggle(isOn: $accessibilityQuickSectionNavigation) {
+                        Text("Quick section navigation").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("quickSectionNavToggle")
+                    .accessibilityHint("Enables jump controls to move between tax sections quickly.")
+                    .listRowBackground(customBackgroundColor)
+                    HStack(spacing: 12) {
+                        Image(systemName: "chevron.left.circle")
+                            .foregroundColor(customTextColor)
+                            .font(.title3)
+                        Image(systemName: "chevron.right.circle")
+                            .foregroundColor(customTextColor)
+                            .font(.title3)
+                    }
+                    .listRowBackground(customBackgroundColor)
+                    
+                    Toggle(isOn: $accessibilityConciseLabels) {
+                        Text("Concise labels").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("conciseLabelsToggle")
+                    .accessibilityHint("Uses shorter labels and abbreviations where clear to reduce clutter.")
+                    .listRowBackground(customBackgroundColor)
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Long Label Example")
+                                .foregroundColor(customTextColor)
+                            Spacer()
+                        }
+                        HStack {
+                            Image(systemName: "arrow.right")
+                                .foregroundColor(customTextColor.opacity(0.7))
+                            Spacer()
+                        }
+                        HStack {
+                            Text("Concise Label")
+                                .foregroundColor(customTextColor)
+                            Spacer()
+                        }
+                    }
+                    .font(.footnote)
+                    .foregroundColor(customTextColor.opacity(0.7))
+                    .listRowBackground(customBackgroundColor)
+                    
+                    Toggle(isOn: $accessibilityConfirmDestructive) {
+                        Text("Confirm destructive actions").foregroundColor(customTextColor)
+                    }
+                    .accessibilityIdentifier("confirmDestructiveToggle")
+                    .accessibilityHint("Shows a confirmation before deleting or resetting data.")
+                    .listRowBackground(customBackgroundColor)
+                    
+                    Button {
+                        if accessibilityConfirmDestructive {
+                            showingDestructiveExample = true
+                        } else {
+                            #if DEBUG
+                            print("Delete action performed without confirmation")
+                            #endif
+                        }
+                    } label: {
+                        Label("Delete dependent…", systemImage: "trash")
+                            .foregroundColor(customTextColor)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .listRowBackground(customBackgroundColor)
+                    .confirmationDialog("Delete this dependent?", isPresented: $showingDestructiveExample, titleVisibility: .visible) {
+                        Button("Delete", role: .destructive) {}
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This action cannot be undone.")
+                    }
+                } header: {
+                    HStack {
+                        Image(systemName: "list.bullet")
+                        Text("Lists & Navigation")
+                    }
+                    .font(.subheadline).bold()
+                    .foregroundStyle(customTextColor)
+                }
+                .textCase(nil)
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
