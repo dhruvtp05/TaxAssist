@@ -16,6 +16,7 @@ struct LoginFlowScreen: View {
     @State private var rememberMe: Bool = false
     
     @State private var errorMessage: String = ""
+    @State private var errorDismissTask: Task<Void, Never>? = nil
     
     var body: some View {
         VStack(spacing: 0) {
@@ -61,6 +62,17 @@ struct LoginFlowScreen: View {
         }
     }
     
+    private func showError(_ message: String) {
+        errorDismissTask?.cancel()
+        errorMessage = message
+        errorDismissTask = Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if !Task.isCancelled {
+                errorMessage = ""
+            }
+        }
+    }
+    
     private var emailEntryView: some View {
         VStack(spacing: 20) {
             VStack(spacing: 6) {
@@ -85,7 +97,9 @@ struct LoginFlowScreen: View {
                 .disableAutocorrection(true)
             
             Button(action: {
-                if !email.isEmpty { showPasswordStep = true }
+                guard !email.isEmpty else { return }
+                errorMessage = ""
+                showPasswordStep = true
             }) {
                 Text("Continue")
                     .font(.system(size: 16, weight: .semibold))
@@ -113,7 +127,7 @@ struct LoginFlowScreen: View {
                     errorMessage = ""
                     
                     guard let clientID = FirebaseApp.app()?.options.clientID else {
-                        errorMessage = "Firebase configuration error."
+                        showError("Firebase configuration error.")
                         return
                     }
                     
@@ -123,19 +137,19 @@ struct LoginFlowScreen: View {
                     guard let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
                           let window = windowScene.windows.first(where: { $0.isKeyWindow }),
                           let rootViewController = window.rootViewController else {
-                        errorMessage = "Could not find active window."
+                        showError("Could not find active window.")
                         return
                     }
                     
                     GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
                         if let error = error {
-                            errorMessage = error.localizedDescription
+                            showError(error.localizedDescription)
                             return
                         }
                         
                         guard let user = signInResult?.user,
                               let idToken = user.idToken?.tokenString else {
-                            errorMessage = "Could not retrieve Google token."
+                            showError("Could not retrieve Google token.")
                             return
                         }
                         
@@ -143,7 +157,7 @@ struct LoginFlowScreen: View {
                         
                         Auth.auth().signIn(with: credential) { result, error in
                             if let error = error {
-                                errorMessage = error.localizedDescription
+                                showError(error.localizedDescription)
                             } else {
                                 print("Successfully logged in with Google!")
                             }
@@ -295,17 +309,23 @@ struct LoginFlowScreen: View {
                 
                 Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
                     if let error = error {
-                        let errCode = (error as NSError).code
-                        if errCode == AuthErrorCode.emailAlreadyInUse.rawValue {
+                        let errCode = AuthErrorCode(rawValue: (error as NSError).code)
+                        
+                        if errCode == .emailAlreadyInUse {
                             Auth.auth().signIn(withEmail: email, password: password) { signResult, signError in
                                 if let signError = signError {
-                                    errorMessage = signError.localizedDescription
+                                    let signErrCode = AuthErrorCode(rawValue: (signError as NSError).code)
+                                    if signErrCode == .invalidCredential || signErrCode == .wrongPassword {
+                                        showError("Incorrect password, or this email is registered with Google. Try 'Continue with Google' instead.")
+                                    } else {
+                                        showError(signError.localizedDescription)
+                                    }
                                 } else {
                                     print("Successfully logged in existing user: \(email)")
                                 }
                             }
                         } else {
-                            errorMessage = error.localizedDescription
+                            showError(error.localizedDescription)
                         }
                     } else {
                         print("Successfully created NEW user: \(email)")
@@ -327,15 +347,15 @@ struct LoginFlowScreen: View {
                             errorMessage = ""
                             
                             guard !email.isEmpty else {
-                                errorMessage = "Please enter your email to reset your password."
+                                showError("Please enter your email to reset your password.")
                                 return
                             }
                             
                             Auth.auth().sendPasswordReset(withEmail: email) { error in
                                 if let error = error {
-                                    errorMessage = error.localizedDescription
+                                    showError(error.localizedDescription)
                                 } else {
-                                    errorMessage = "✅ Password reset email sent! Check your inbox."
+                                    showError("✅ Password reset email sent! Check your inbox.")
                                 }
                             }
                         }
