@@ -33,7 +33,7 @@ enum SettingsUI {
             switch customBackgroundPreset {
      
             case "black":
-                return Color.black.opacity(0.9)
+                return Color(red: 0.10, green: 0.11, blue: 0.12)
             default:
                 return Color.white
             }
@@ -124,12 +124,7 @@ enum SettingsUI {
                     }
 
                     // Account
-                    Section(header:
-                        Text("Account")
-                            .font(.subheadline)
-                            .fontWeight(accessibilityBoldText ? .bold : .regular)
-                            .foregroundStyle(customTextColor)
-                    ) {
+                    Section(header: Text("Account").font(.subheadline).bold()) {
                         NavigationLink {
                             VStack(alignment: .leading, spacing: 12) {
                                 LabeledContent("Full name") {
@@ -161,7 +156,7 @@ enum SettingsUI {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "person.circle")
-                                    .foregroundStyle(customTextColor)
+                                    .foregroundStyle(.blue)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Account Information").fontWeight(accessibilityBoldText ? .bold : .regular)
                                     Text(userEmail.isEmpty ? "Add email" : userEmail)
@@ -185,7 +180,7 @@ enum SettingsUI {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "lock.shield")
-                                    .foregroundStyle(customTextColor)
+                                    .foregroundStyle(.blue)
                                 Text("Security").fontWeight(accessibilityBoldText ? .bold : .regular)
                                 Spacer()
                                 Text(biometricLockEnabled ? "On" : "Off")
@@ -213,7 +208,7 @@ enum SettingsUI {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "bell.badge")
-                                    .foregroundStyle(customTextColor)
+                                    .foregroundStyle(.blue)
                                 Text("Notifications").fontWeight(accessibilityBoldText ? .bold : .regular)
                                 Spacer()
                                 Text(notificationsEnabled ? "On" : "Off")
@@ -229,15 +224,10 @@ enum SettingsUI {
                     }
 
                     // Preferences
-                    Section(header:
-                        Text("Preferences")
-                            .font(.subheadline)
-                            .fontWeight(accessibilityBoldText ? .bold : .regular)
-                            .foregroundStyle(customTextColor)
-                    ) {
+                    Section(header: Text("Preferences").font(.subheadline).bold()) {
                         HStack(spacing: 12) {
                             Image(systemName: "globe")
-                                .foregroundStyle(customTextColor)
+                                .foregroundStyle(.blue)
                             Picker("Language", selection: .constant("English")) {
                                 Text("English").tag("English")
                             }
@@ -246,58 +236,58 @@ enum SettingsUI {
 
                         HStack(spacing: 12) {
                             Image(systemName: "dollarsign")
-                                .foregroundStyle(customTextColor)
+                                .foregroundStyle(.blue)
                             Picker("Currency", selection: $preferredCurrency) {
                                 ForEach(supportedCurrencies, id: \.self) { code in
                                     Text(code).tag(code)
                                 }
                             }
                             .pickerStyle(.navigationLink)
+                            Spacer(minLength: 0)
                         }
 
                         HStack(spacing: 12) {
                             Image(systemName: "calendar")
-                                .foregroundStyle(customTextColor)
+                                .foregroundStyle(.blue)
                             Picker("Default tax year", selection: $defaultTaxYear) {
                                 ForEach(supportedTaxYears, id: \.self) { year in
                                     Text(String(year)).tag(year)
                                 }
                             }
                             .pickerStyle(.navigationLink)
+                            Spacer(minLength: 0)
                         }
 
                         HStack(spacing: 12) {
                             Image(systemName: "paintpalette")
-                                .foregroundStyle(customTextColor)
+                                .foregroundStyle(.blue)
                             NavigationLink {
                                 VStack(alignment: .leading, spacing: 16) {
                                     Picker("Background", selection: $customBackgroundPreset) {
-                                        Text("White").tag("white")
-                                        Text("Dark Black").tag("black")
+                                        Text("Light").tag("white")
+                                        Text("Dark").tag("black")
                                     }
                                     .pickerStyle(.segmented)
 
                                     VStack(alignment: .leading, spacing: 8) {
-                                        LabeledContent("Text hue") {
+                                        LabeledContent("Accent hue") {
                                             Slider(value: $customTextHue, in: 0...1, step: 0.01)
-                                                .tint(customTextColor)
                                         }
                                     }
 
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(customBackgroundColor)
+                                        .fill(.background)
                                         .overlay(
                                             HStack(spacing: 12) {
-                                                Circle().fill(customTextColor).frame(width: 12, height: 12)
+                                                Circle().fill(.tint).frame(width: 12, height: 12)
                                                 Text("Preview text")
-                                                    .foregroundStyle(customTextColor)
                                                     .font(.subheadline)
                                                 Spacer()
                                             }
                                             .padding(12)
                                         )
                                         .overlay(
-                                            RoundedRectangle(cornerRadius: 12).stroke(previewStrokeColor, lineWidth: 1)
+                                            RoundedRectangle(cornerRadius: 12).stroke(.quaternary, lineWidth: 1)
                                         )
                                         .frame(height: 56)
 
@@ -319,19 +309,14 @@ enum SettingsUI {
                     .textCase(nil)
 
                     // General
-                    Section(header:
-                        Text("General")
-                            .font(.subheadline)
-                            .fontWeight(accessibilityBoldText ? .bold : .regular)
-                            .foregroundStyle(customTextColor)
-                    ) {
+                    Section(header: Text("General").font(.subheadline).bold()) {
                         Button {
                             exportData()
                         } label: {
                             HStack(spacing: 12) {
-                                Image(systemName: "square.and.arrow.up")
-                                    .foregroundStyle(customTextColor)
-                                Text("Export data").fontWeight(accessibilityBoldText ? .bold : .regular)
+                                Image(systemName: "externaldrive.badge.icloud")
+                                    .foregroundStyle(.blue)
+                                Text("Data & Storage").fontWeight(accessibilityBoldText ? .bold : .regular)
                                 Spacer()
                                 if isExportingData { ProgressView() }
                             }
@@ -350,7 +335,7 @@ enum SettingsUI {
                         Toggle(isOn: $shareAnalytics) {
                             HStack(spacing: 12) {
                                 Image(systemName: "chart.bar.xaxis")
-                                    .foregroundStyle(customTextColor)
+                                    .foregroundStyle(.blue)
                                 Text("Share anonymous analytics")
                                     .fontWeight(accessibilityBoldText ? .bold : .regular)
                             }
@@ -359,12 +344,7 @@ enum SettingsUI {
                     .textCase(nil)
 
                     // Support
-                    Section(header:
-                        Text("Support")
-                            .font(.subheadline)
-                            .fontWeight(accessibilityBoldText ? .bold : .regular)
-                            .foregroundStyle(customTextColor)
-                    ) {
+                    Section(header: Text("Support").font(.subheadline).bold()) {
                         NavigationLink {
                             PrivacyPolicyScreen()
                                 .navigationTitle("Privacy Policy")
@@ -372,7 +352,7 @@ enum SettingsUI {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "hand.raised")
-                                    .foregroundStyle(customTextColor)
+                                    .foregroundStyle(.blue)
                                 Text("Privacy Policy").fontWeight(accessibilityBoldText ? .bold : .regular)
                             }
                         }
@@ -384,7 +364,7 @@ enum SettingsUI {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "doc.plaintext")
-                                    .foregroundStyle(customTextColor)
+                                    .foregroundStyle(.blue)
                                 Text("Terms of Service").fontWeight(accessibilityBoldText ? .bold : .regular)
                             }
                         }
@@ -394,8 +374,8 @@ enum SettingsUI {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "star.circle")
-                                    .foregroundStyle(customTextColor)
-                                Text("Rate TaxAssist").fontWeight(accessibilityBoldText ? .bold : .regular)
+                                    .foregroundStyle(.blue)
+                                Text("Help Center").fontWeight(accessibilityBoldText ? .bold : .regular)
                             }
                         }
 
@@ -404,23 +384,19 @@ enum SettingsUI {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "envelope")
-                                    .foregroundStyle(customTextColor)
-                                Text("Contact support").fontWeight(accessibilityBoldText ? .bold : .regular)
+                                    .foregroundStyle(.blue)
+                                Text("Contact Support").fontWeight(accessibilityBoldText ? .bold : .regular)
                             }
                         }
                     }
                     .textCase(nil)
 
                     // App info
-                    Section {
+                    Section(footer: Text("Your settings are saved automatically and can be changed at any time.").font(.footnote).foregroundStyle(.secondary)) {
                         HStack {
-                            Label {
-                                Text("Version")
-                                    .fontWeight(accessibilityBoldText ? .bold : .regular)
-                            } icon: {
+                            Label { Text("Version").fontWeight(accessibilityBoldText ? .bold : .regular) } icon: {
                                 Image(systemName: "info.circle")
                             }
-                            .foregroundStyle(customTextColor)
                             Spacer()
                             Text(appVersionString)
                                 .foregroundStyle(.secondary)
@@ -445,15 +421,10 @@ enum SettingsUI {
                 .dynamicTypeSize(accessibilityLargerText ? .accessibility3 : .large)
                 .scrollContentBackground(.hidden)
                 .background(customBackgroundColor.ignoresSafeArea())
-                .foregroundStyle(customTextColor)
                 .toolbarBackground(customBackgroundColor, for: .navigationBar)
                 .toolbarColorScheme(contrastingForegroundColor == .white ? .dark : .light, for: .navigationBar)
-                #if os(macOS) || os(visionOS)
-                .toolbarForegroundStyle(customTextColor, for: .navigationBar)
-                #endif
                 .navigationTitle("Settings")
                 .navigationBarTitleDisplayMode(.inline)
-                .tint(customTextColor)
             }
         }
 

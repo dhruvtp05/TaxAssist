@@ -226,7 +226,9 @@ struct MyDocumentsScreen: View {
             
             Text("When you finish a tax form, it will automatically be saved and securely stored right here.")
                 .font(.body)
-                .foregroundColor(.secondary)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .shadow(color: .black.opacity(0.6), radius: 2, y: 1)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
         }

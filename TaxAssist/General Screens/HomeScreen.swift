@@ -58,14 +58,17 @@ struct HomeScreen: View {
     
     @State private var showAccessibilitySettings = false
     
-    // Placeholder data for when a document IS active
-    let currentStep: Int = 2
-    let totalSteps: Int = 10
-
     @AppStorage("customBackgroundPreset") private var customBackgroundPreset: String = "white"
     @AppStorage("customTextHue") private var customTextHue: Double = 0.58
     @AppStorage("accessibilityConciseLabels") private var accessibilityConciseLabels: Bool = true
     @AppStorage("accessibilityQuickSectionNavigation") private var accessibilityQuickSectionNavigation: Bool = true
+    
+    @AppStorage("accessibilityTextSize") private var accessibilityTextSize: Double = 0.5
+    @AppStorage("accessibilityBoldText") private var accessibilityBoldText: Bool = false
+
+    // Placeholder data for when a document IS active
+    let currentStep: Int = 2
+    let totalSteps: Int = 10
 
     private var progress: Double {
         Double(currentStep) / Double(totalSteps)
@@ -136,6 +139,15 @@ struct HomeScreen: View {
         return Color(hue: customTextHue, saturation: 0.85, brightness: 0.9)
         #endif
     }
+    private var primaryTextColor: Color { contrastingForegroundColor }
+    private var secondaryTextColor: Color { contrastingForegroundColor.opacity(0.7) }
+    
+    private var dynamicTypeFromSlider: DynamicTypeSize {
+        switch accessibilityTextSize {
+        case ..<0.2: return .large
+        default: return .accessibility2
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -147,6 +159,7 @@ struct HomeScreen: View {
                     
                     Text("What would you like to do?")
                         .font(.title2.bold())
+                        .fontWeight(accessibilityBoldText ? .bold : .regular)
                         .foregroundColor(customTextColor)
 
                     actionGrid
@@ -154,8 +167,10 @@ struct HomeScreen: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
                 .padding(.bottom, 100)
+                .fontWeight(accessibilityBoldText ? .bold : .regular)
             }
             .background(customBackgroundColor.ignoresSafeArea())
+            .dynamicTypeSize(dynamicTypeFromSlider)
             .navigationBarHidden(true)
             .onAppear {
                 fetchUserData()
@@ -210,8 +225,9 @@ struct HomeScreen: View {
                         .foregroundColor(customTextColor)
                 }
 
-                Text("\(Text("Tax").foregroundColor(.primary))\(Text("Assist").foregroundColor(customTextColor))")
+                Text("\(Text("Tax").foregroundColor(primaryTextColor))\(Text("Assist").foregroundColor(customTextColor))")
                     .font(.title.bold())
+                    .fontWeight(accessibilityBoldText ? .bold : .regular)
             }
             Spacer()
             Image(systemName: "person.circle")
@@ -223,10 +239,13 @@ struct HomeScreen: View {
     private var greeting: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Good morning, \(userName)!")
-                .font(.system(size: 28, weight: .bold))
-            Text("Let's get your taxes done, step by step.")
-                .font(.body)
-                .foregroundColor(.secondary)
+                .font(.title)
+                .fontWeight(accessibilityBoldText ? .bold : .regular)
+                .foregroundColor(.white)
+                Text("Let's get your taxes done, step by step.")
+                    .font(.body)
+                    .fontWeight(accessibilityBoldText ? .bold : .regular)
+                    .foregroundColor(secondaryTextColor)
         }
     }
 
@@ -392,7 +411,7 @@ struct ActionCard: View {
                 HStack(alignment: .bottom) {
                     Text(item.subtitle)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(accent.opacity(0.7))
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer()
@@ -501,3 +520,4 @@ struct AvailableFormsSheet: View {
 #Preview {
     HomeScreen(selectedTab: .constant(.home))
 }
+

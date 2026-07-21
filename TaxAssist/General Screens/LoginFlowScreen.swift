@@ -85,7 +85,7 @@ struct LoginFlowScreen: View {
                 }
                 
                 HStack(spacing: 0) {
-                    Text("Tax").foregroundColor(.black)
+                    Text("Tax").foregroundColor(.white)
                     Text("Assist").foregroundColor(.blue)
                 }
                 .font(.system(size: 44, weight: .bold))
@@ -125,6 +125,7 @@ struct LoginFlowScreen: View {
                 Text("Create an account")
                     .font(.title2)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
                 
                 Text("Enter your email to sign up for this app")
                     .font(.subheadline)

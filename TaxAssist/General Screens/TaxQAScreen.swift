@@ -103,16 +103,27 @@ struct TaxQAScreen: View {
                 HStack(alignment: .bottom, spacing: 12) {
                     TextField("Ask a tax question...", text: $viewModel.inputText, axis: .vertical)
                         .padding(12)
-                        .background(Color(uiColor: .systemGray6))
+                        .background(Color.black)
+                        .foregroundColor(.white)
+                        .tint(.white)
+                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.2), lineWidth: 1))
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                         .lineLimit(1...5)
                     
                     Button {
                         viewModel.sendMessage()
                     } label: {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 32))
-                            .foregroundColor(viewModel.inputText.isEmpty ? .gray : customTextColor)
+                        ZStack {
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 44, height: 44)
+                                .overlay(
+                                    Circle().stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                )
+                            Image(systemName: "arrow.up")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(viewModel.inputText.isEmpty ? .gray : .white)
+                        }
                     }
                     .disabled(viewModel.inputText.isEmpty)
                 }
@@ -141,7 +152,8 @@ struct TaxQAScreen: View {
                 .font(.title2.bold())
                 .foregroundStyle(customTextColor)
             Text("Ask me anything about related to your taxes")
-                .foregroundColor(.secondary)
+                .foregroundColor(.white)
+                .shadow(color: .black.opacity(0.6), radius: 2, y: 1)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
         }
@@ -195,3 +207,4 @@ struct TypingIndicatorBubble: View {
 #Preview {
     TaxQAScreen()
 }
+

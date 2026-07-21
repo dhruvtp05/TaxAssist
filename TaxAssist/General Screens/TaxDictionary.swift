@@ -69,46 +69,16 @@ struct TaxDictionary: View {
         return rows
     }
 
-    private var customBackgroundColor: Color {
-        switch customBackgroundPreset {
-        case "blue": return Color.blue.opacity(0.15)
-        case "black": return Color.black.opacity(0.9)
-        case "sky": return Color(red: 0.75, green: 0.88, blue: 1.0)
-        default: return .white
-        }
-    }
-    private var contrastingForegroundColor: Color {
-        #if canImport(UIKit)
-        let ui = UIColor(customBackgroundColor)
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        if ui.getRed(&r, green: &g, blue: &b, alpha: &a) {
-            let luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
-            return luminance < 0.5 ? .white : .black
-        } else {
-            var white: CGFloat = 0
-            ui.getWhite(&white, alpha: nil)
-            return white < 0.5 ? .white : .black
-        }
-        #else
-        return .primary
-        #endif
-    }
     private var customTextColor: Color {
         #if canImport(UIKit)
         let base = Color(hue: customTextHue, saturation: 0.85, brightness: 0.9)
-        let fg = UIColor(contrastingForegroundColor)
-        let bs = UIColor(base)
-        var fr: CGFloat = 0, fgG: CGFloat = 0, fb: CGFloat = 0, fa: CGFloat = 0
-        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
-        bs.getRed(&br, green: &bg, blue: &bb, alpha: &ba)
-        fg.getRed(&fr, green: &fgG, blue: &fb, alpha: &fa)
-        let mix: (CGFloat, CGFloat) -> CGFloat = { (u, c) in min(max(u * 0.75 + c * 0.25, 0), 1) }
-        let rr = mix(br, fr), gg = mix(bg, fgG), bb2 = mix(bb, fb)
-        return Color(red: rr, green: gg, blue: bb2)
+        return base
         #else
         return Color(hue: customTextHue, saturation: 0.85, brightness: 0.9)
         #endif
     }
+
+    private var accentColor: Color { .blue }
 
     var body: some View {
         NavigationStack {
@@ -159,9 +129,7 @@ struct TaxDictionary: View {
                     }
                 }
             }
-            .toolbarBackground(customBackgroundColor, for: .navigationBar)
-            .toolbarColorScheme(contrastingForegroundColor == .white ? .dark : .light, for: .navigationBar)
-            .background(customBackgroundColor.ignoresSafeArea())
+            // Removed .toolbarBackground, .toolbarColorScheme, and .background modifiers here
             .transaction { tx in if accessibilityReduceMotion { tx.animation = nil } }
         }
     }
@@ -180,7 +148,7 @@ struct TaxDictionary: View {
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(customBackgroundColor.ignoresSafeArea())
+        // Removed .background modifier here
     }
 }
 
@@ -220,3 +188,4 @@ private struct TermRow: View {
 #Preview {
     TaxDictionary()
 }
+
