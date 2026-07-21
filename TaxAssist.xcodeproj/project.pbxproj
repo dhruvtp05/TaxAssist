@@ -15,28 +15,17 @@
 		16DCD2AA2FFD4DC9007BBEDB /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2A92FFD4DC9007BBEDB /* FirebaseAuth */; };
 		16DCD2ED2FFD62A8007BBEDB /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2EC2FFD62A8007BBEDB /* GoogleSignIn */; };
 		16DCD2EF2FFD62A8007BBEDB /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 16DCD2EE2FFD62A8007BBEDB /* GoogleSignInSwift */; };
+		16FB5D213009A261007B557E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 16FB5D203009A261007B557E /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		16EF83812FF56829005CE568 /* TaxAssist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaxAssist.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		16FB5D203009A261007B557E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		16B087F230068D6E00ADFEEE /* Exceptions for "TaxAssist" folder in "TaxAssist" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 16EF83802FF56829005CE568 /* TaxAssist */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		16EF83832FF56829005CE568 /* TaxAssist */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				16B087F230068D6E00ADFEEE /* Exceptions for "TaxAssist" folder in "TaxAssist" target */,
-			);
 			path = TaxAssist;
 			sourceTree = "<group>";
 		};
@@ -74,6 +63,7 @@
 				16EF83832FF56829005CE568 /* TaxAssist */,
 				16DCD2A62FFD4DBF007BBEDB /* Frameworks */,
 				16EF83822FF56829005CE568 /* Products */,
+				16FB5D203009A261007B557E /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -161,6 +151,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				16FB5D213009A261007B557E /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -306,7 +297,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TaxAssist/Info.plist;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -340,7 +331,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TaxAssist/Info.plist;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
