@@ -56,6 +56,7 @@ struct HomeScreen: View {
     // Controls programmatic navigation to FAQs
     @State private var showFAQs: Bool = false
     
+    @State private var showLogoutConfirmation: Bool = false
     @State private var showAccessibilitySettings = false
     
     // Placeholder data for when a document IS active
@@ -185,6 +186,16 @@ struct HomeScreen: View {
             .navigationDestination(isPresented: $showFAQs) {
                 FAQs()
             }
+            .confirmationDialog(
+                "Are you sure you want to log out?",
+                isPresented: $showLogoutConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Log Out", role: .destructive) {
+                    logOut()
+                }
+                Button("Cancel", role: .cancel) {}
+            }
         }
     }
 
@@ -196,6 +207,10 @@ struct HomeScreen: View {
         } else if let email = user.email {
             userName = email.components(separatedBy: "@").first ?? "User"
         }
+    }
+
+    private func logOut() {
+        try? Auth.auth().signOut()
     }
 
     private var header: some View {
@@ -214,9 +229,13 @@ struct HomeScreen: View {
                     .font(.title.bold())
             }
             Spacer()
-            Image(systemName: "person.circle")
-                .font(.system(size: 30))
-                .foregroundColor(customTextColor)
+            Button {
+                showLogoutConfirmation = true
+            } label: {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
+                    .font(.system(size: 26))
+                    .foregroundColor(customTextColor)
+            }
         }
     }
 
@@ -432,7 +451,7 @@ struct AvailableFormsSheet: View {
                     Text("Name your document")
                         .font(.title2.bold())
                     
-                    TextField("e.g. Freelance Gig 2026", text: $documentName)
+                    TextField("e.g. Google W4 Form", text: $documentName)
                         .padding()
                         .background(Color(uiColor: .systemGray6))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
